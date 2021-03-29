@@ -112,8 +112,8 @@ class WrapperSingle():
             self.run_file(cap,net,self.output_path)
     
     def single_detection(self,net,frame):
-        inp_blob = cv.dnn.blobFromImage(frame, 1.0 / 255, (self.in_width, self.in_height), (0, 0, 0), swapRB=False, crop=False)
-        net.setInput(inp_blob)
+        in_blob = cv.dnn.blobFromImage(frame, 1.0 / 255, (self.in_width, self.in_height), (0, 0, 0), swapRB=False, crop=False)
+        net.setInput(in_blob)
         output = net.forward()
         H = output.shape[2]
         W = output.shape[3]
@@ -417,13 +417,12 @@ class WrapperMultiple():
         return personwise_keypoints
 
     """
-    Definizione run dell'an_alisi con differenzazione tra presenza di file di output
+    Definizione run dell'analisi con differenzazione tra presenza di file di output
     (an_alisi video e creazione di un file di outout) o meno (live feed dalla fotocamera).
     """
     
     def multiple_detections(self,net,frame):
-        in_blob = cv.dnn.blobFromImage(frame, 1.0 / 255, (self.in_width, self.in_height),
-                          (0, 0, 0), swapRB=False, crop=False)
+        in_blob = cv.dnn.blobFromImage(frame, 1.0 / 255, (self.in_width, self.in_height),(0, 0, 0), swapRB=False, crop=False)
         net.setInput(in_blob)
         output = net.forward()
 

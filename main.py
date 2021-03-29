@@ -2,7 +2,6 @@ import argparse
 from ModelWrapper import WrapperSingle,WrapperMultiple
 
 modello=[".\\mpi\\pose_iter_160000.caffemodel",".\\mpi\\pose_deploy_linevec_faster_4_stages.prototxt"]
-#at the moment is only mpi
 
 def main():
     parser = argparse.ArgumentParser(description='Process images')
