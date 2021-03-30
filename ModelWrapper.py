@@ -472,9 +472,14 @@ class WrapperMultiple():
             A = np.int32(self.keypoints_list[index.astype(int), 1])
             median_x=np.absolute(B[0]-B[1])/2+min([B[0],B[1]])
             median_y=np.absolute(A[0]-A[1])/2+min([A[0],A[1]])
-            radius=np.sqrt(np.power(B[0]-B[1],2)+np.power(A[0]-A[1],2))*0.6
+            radius=int(np.sqrt(np.power(B[0]-B[1],2)+np.power(A[0]-A[1],2))*0.6)
             cv.circle(frame, (int(median_x), int(median_y)), int(radius), (0, 0, 0), thickness=-1, lineType=cv.FILLED)
-
+            """
+            median_x=median_x-radius
+            median_y=median_y+radius
+            radius=radius*2
+            cv.rectangle(frame, (median_x, median_y),(median_x+radius, median_y-radius), (0, 0, 0),-1)
+            """
         return frame
         
     def run_simulation(self):
@@ -517,7 +522,7 @@ class WrapperMultiple():
             if ret == True:
                 frame=self.multiple_detections(net,frame)
                 cv.imshow("Output-Keypoints",frame)
-                if cv.waitKey(1) & 0xFF == ord('q'): #cv.waitKey(1) if you want to reproduce a video smoothly else cv.waitKey(0) for a still image
+                if cv.waitKey(0) & 0xFF == ord('q'): #cv.waitKey(1) if you want to reproduce a video smoothly else cv.waitKey(0) for a still image
                     break
             else:
                 break

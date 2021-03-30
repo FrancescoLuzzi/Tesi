@@ -9,9 +9,6 @@ def main():
     parser.add_argument("--videoOut","-o",type=str,help="file di output opzionale")
     parser.add_argument("-m",default=False, action="store_true")
     args=parser.parse_args()
-    if args.videoOut!=None:
-        args.videoOut=".\\"+args.videoOut
-    wrapper=None
     if args.m:
         wrapper=WrapperMultiple(args.videoIn,modello[0],modello[1],args.videoOut)
     else:
