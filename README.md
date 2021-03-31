@@ -9,5 +9,5 @@ The **tags** to lauch this program are:
 [OpenPose's README.md](https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/master/README.md).
 
 ## Prerequisites
-opencv 4.5.1
-numpy
+* opencv 4.5.1
+* numpy
