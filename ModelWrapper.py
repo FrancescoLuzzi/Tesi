@@ -470,15 +470,28 @@ class WrapperMultiple():
                 continue
             B = np.int32(self.keypoints_list[index.astype(int), 0])
             A = np.int32(self.keypoints_list[index.astype(int), 1])
-            median_x=np.absolute(B[0]-B[1])/2+min([B[0],B[1]])
-            median_y=np.absolute(A[0]-A[1])/2+min([A[0],A[1]])
+            median_x=int(np.absolute(B[0]-B[1])/2+min([B[0],B[1]]))
+            median_y=int(np.absolute(A[0]-A[1])/2+min([A[0],A[1]]))
             radius=int(np.sqrt(np.power(B[0]-B[1],2)+np.power(A[0]-A[1],2))*0.6)
             cv.circle(frame, (int(median_x), int(median_y)), int(radius), (0, 0, 0), thickness=-1, lineType=cv.FILLED)
             """
+
             median_x=median_x-radius
             median_y=median_y+radius
             radius=radius*2
             cv.rectangle(frame, (median_x, median_y),(median_x+radius, median_y-radius), (0, 0, 0),-1)
+
+            #Bisogna controllare il blur... a volte va a volte no
+            start_x=median_x-radius
+            end_x=median_x
+            start_y=median_y
+            end_y=median_y+radius
+            print(start_x,end_x,start_y,end_y)
+            try:
+                frame[start_x:end_x, start_y:end_y]=cv.blur(frame[start_x:end_x, start_y:end_y],(23,23))
+            except Exception:
+                print("errore a caso")
+
             """
         return frame
         
