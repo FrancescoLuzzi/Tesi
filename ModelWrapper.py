@@ -348,15 +348,14 @@ class WrapperMultiple():
                             d_ij = d_ij / norm
                         else:
                             continue
-                        # Find p(u)
+                        #Create an array of 10 interpolated points on the line joining the two keypoints.
                         interp_coord = list(zip(np.linspace(cand_a[i][0], cand_b[j][0], num=n_interp_samples),
                                                 np.linspace(cand_a[i][1], cand_b[j][1], num=n_interp_samples)))
-                        # Find L(p(u))
                         paf_interp = []
-                        for k in range(len(interp_coord)):
+                        for k in range(n_interp_samples):
                             paf_interp.append([paf_a[int(round(interp_coord[k][1])), int(round(interp_coord[k][0]))],
                                             paf_b[int(round(interp_coord[k][1])), int(round(interp_coord[k][0]))] ])
-                        # Find E
+                        # Find avg_PAF_score as the midpoint of all the PAF_scores
                         paf_scores = np.dot(paf_interp, d_ij)
                         avg_paf_score = sum(paf_scores)/len(paf_scores)
 
