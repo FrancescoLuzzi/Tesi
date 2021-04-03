@@ -201,7 +201,7 @@ class WrapperMultiple():
         self.__model_path=model_path
         self.__proto_path=proto_path
         self.oldpars=[]
-        self.threshold = 0.1
+        self.threshold = 1/3/np.e #=~0.1226
         self.colors = [ [255,200,100], [0,100,255], [0,255,255] , [0,255,0], [0,100,255], [0,255,255],
          [0,255,0],[0,100,255] , [255,0,255], [0,0,255], [255,0,0], [255,0,255],
          [0,0,255], [255,0,0], [0,0,128]]
@@ -283,14 +283,14 @@ class WrapperMultiple():
     get all keypoints present in the image from the probability map
     """
     def get_keypoints(self,prob_map):
-        map_smooth = cv.GaussianBlur(prob_map,(3,3),0,0)
+        map_smooth = cv.GaussianBlur(prob_map,(3,3),sigmaX=0,sigmaY=0)
         map_mask = np.uint8(map_smooth>self.threshold)
         keypoints = []
 
-        #find the blobs
+        #find the contours where the keypoints migth be
         contours, _ = cv.findContours(map_mask, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
 
-        #for each blob find the maxima
+        #for each contour find the maxima, where there is the keypoint
         for cnt in contours:
             blob_mask = np.zeros(map_mask.shape)
             blob_mask = cv.fillConvexPoly(blob_mask, cnt, 1)
@@ -310,9 +310,9 @@ class WrapperMultiple():
         invalid_pairs = []
         n_interp_samples = 10
         paf_score_th = 0.1
-        conf_th = 0.7
+        conf_th =0.7
         # loop for every POSE_PAIR
-        for k in range(len(self.map_idx)):
+        for k in range(self.n_points-1):
             # A->B constitute a limb
             paf_a = output[0, self.map_idx[k][0], :, :]
             paf_b = output[0, self.map_idx[k][1], :, :]
@@ -387,7 +387,7 @@ class WrapperMultiple():
         # 0 rows, self.n_points+1 cols
         personwise_keypoints = -1 * np.ones((0, (self.n_points+1)))
 
-        for k in range(len(self.map_idx)):
+        for k in range(self.n_points-1):
             if k not in invalid_pairs:
                 part_As = valid_pairs[k][:,0]
                 part_Bs = valid_pairs[k][:,1]
@@ -422,13 +422,18 @@ class WrapperMultiple():
     """
     
     def multiple_detections(self,net,frame):
+        #blob and forwrd to the network
         in_blob = cv.dnn.blobFromImage(frame, 1.0 / 255, (self.in_width, self.in_height),(0, 0, 0), swapRB=False, crop=False)
         net.setInput(in_blob)
         output = net.forward()
-
+        
+        #set up of result points
         self.detected_keypoints = []
         self.keypoints_list = np.zeros((0,3))
         keypoint_id = 0
+
+        #for each keypoint get the probability map and feed it to the get_keypoints function
+        #then add them to an other list as a tuple with it's Id then added to the detected_keypoints
 
         for part in range(self.n_points):
             prob_map = output[0,part,:,:]
@@ -444,16 +449,18 @@ class WrapperMultiple():
 
             self.detected_keypoints.append(keypoints_with_id)
 
-
+        #draw all the keypoints
         for i in range(self.n_points):
             for j in range(len(self.detected_keypoints[i])):
                 cv.circle(frame, self.detected_keypoints[i][j][0:2], 4, self.colors[i], -1, cv.LINE_AA)
-        #cv.imshow("Keypoints",frame)
 
+        #get vaild_paris from the get_valid_pairs function
         valid_pairs, invalid_pairs = self.get_valid_pairs(output)
+        #detect which pair is from the same person
         personwise_keypoints = self.get_personwise_keypoints(valid_pairs, invalid_pairs)
 
-        for i in range((self.n_points-1)):
+        #display all connections between the keypoints from the same person
+        for i in range(self.n_points-1):
             for n in range(len(personwise_keypoints)):
                 index = personwise_keypoints[n][np.array(self.POSE_PAIRS[i])]
                 if -1 in index:
@@ -462,9 +469,9 @@ class WrapperMultiple():
                 A = np.int32(self.keypoints_list[index.astype(int), 1])
                 cv.line(frame, (B[0], A[0]), (B[1], A[1]), self.colors[i], 3, cv.LINE_AA)
 
-        # I use the Pafs that connects the Head to the Neck of each person
-        # to determine where and how big the circle that covers the face should be.
-        for n in range(len(personwise_keypoints)):
+        #For each person i get the neck,head pair then find the distance between them and
+        #the midpoint which will be the center of the circle that covers the face
+        for n in range(len(personwise_keypoints)): 
             index = personwise_keypoints[n][np.array(self.POSE_PAIRS[0])]
             if -1 in index:
                 continue
@@ -473,26 +480,7 @@ class WrapperMultiple():
             median_x=int(np.absolute(B[0]-B[1])/2+min([B[0],B[1]]))
             median_y=int(np.absolute(A[0]-A[1])/2+min([A[0],A[1]]))
             radius=int(np.sqrt(np.power(B[0]-B[1],2)+np.power(A[0]-A[1],2))*0.6)
-            cv.circle(frame, (int(median_x), int(median_y)), int(radius), (0, 0, 0), thickness=-1, lineType=cv.FILLED)
-            """
-
-            median_x=median_x-radius
-            median_y=median_y+radius
-            radius=radius*2
-            cv.rectangle(frame, (median_x, median_y),(median_x+radius, median_y-radius), (0, 0, 0),-1)
-
-            #Bisogna controllare il blur... a volte va a volte no
-            start_x=median_x-radius
-            end_x=median_x
-            start_y=median_y
-            end_y=median_y+radius
-            print(start_x,end_x,start_y,end_y)
-            try:
-                frame[start_x:end_x, start_y:end_y]=cv.blur(frame[start_x:end_x, start_y:end_y],(23,23))
-            except Exception:
-                print("errore a caso")
-
-            """
+            cv.circle(frame, (median_x, median_y), radius, (0, 0, 0), thickness=-1, lineType=cv.FILLED)
         return frame
         
     def run_simulation(self):
