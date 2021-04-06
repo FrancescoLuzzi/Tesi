@@ -365,7 +365,7 @@ class WrapperMultiple():
                             max_j = j
                             max_score = avg_paf_score
                             found = 1
-                    # Append the connection to the list
+                    # Append the connection to the list [[x,y],scpre]
                     if found:
                         valid_pair = np.append(valid_pair, [[cand_a[i][3], cand_b[max_j][3], max_score]], axis=0)
 
@@ -400,12 +400,12 @@ class WrapperMultiple():
                             person_idx = j
                             found = 1
                             break
-
+                    #if the part_A is found (Start of the connection) then add part_B to the person
                     if found:
                         personwise_keypoints[person_idx][index_b] = part_Bs[i]
                         personwise_keypoints[person_idx][-1] += self.keypoints_list[part_Bs[i].astype(int), 2] + valid_pairs[k][i][2]
 
-                    # if find no partA in the subset, create a new subset
+                    # if find no partA in the person keypoints, add one
                     elif not found and k < (self.n_points-1):
                         row = -1 * np.ones((self.n_points+1))
                         row[index_a] = part_As[i]
