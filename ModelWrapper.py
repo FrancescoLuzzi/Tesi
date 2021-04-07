@@ -10,84 +10,19 @@ class WrapperSingle():
     """
     def __init__(self,file_path,model_path,proto_path,output_path):
         if(file_path!="0" and os.path.isfile(file_path)):
-            self.__file_path=file_path
+            self.file_path=file_path
         else:
             print(errori['video_in'])
-            self.__file_path=0
-        self.__output_path=output_path
-        self.__model_path=model_path
-        self.__proto_path=proto_path
+            self.file_path=0
+        self.output_path=output_path
+        self.model_path=model_path
+        self.proto_path=proto_path
         self.oldpars=[]
         self.threshold = 0.1
         self.colors = [ [255,200,100], [0,100,255], [0,255,255] , [0,255,0], [0,100,255], [0,255,255],
          [0,255,0],[0,100,255] , [255,0,255], [0,0,255], [255,0,0], [255,0,255],
          [0,0,255], [255,0,0], [0,0,128]]
-    """
-    getter file_path
-    """
-    @property
-    def file_path(self):
-        return str(self.__file_path)
 
-    """
-    setter file_path
-    """
-    @file_path.setter
-    def file_path(self,file_path):
-        if(os.path.isfile(file_path)):
-            self.__file_path=file_path
-        else:
-            print(errori['video_in'])
-            self.__file_path=0
-
-    """
-    getter output_path
-    """
-    @property
-    def output_path(self):
-        return str(self.__output_path)
-
-    """
-    setter output_path
-    """
-    @output_path.setter
-    def output_path(self,output_path=""):
-        self.__output_path=output_path
-
-    """
-    getter model_path
-    """
-    @property
-    def model_path(self):
-        return str(self.__model_path)
-
-    """
-    setter model_path
-    """
-    @model_path.setter
-    def model_path(self,model_path):
-        self.__model_path=model_path
-
-    """
-    getter proto_path
-    """
-    @property
-    def proto_path(self):
-        return str(self.__proto_path)
-
-    """
-    setter proto_path
-    """
-    @proto_path.setter
-    def proto_path(self,proto_path):
-        self.__proto_path=proto_path
-
-    """
-    displayer of all local variables
-    """
-    def all_args(self):
-        return ", ".join([self.file_path,self.model_path,self.proto_path,self.output_path])
-    
     """
     Definizione run dell'an_alisi con differenzazione tra presenza di file di output
     (an_alisi video e creazione di un file di outout) o meno (live feed dalla fotocamera).
@@ -193,13 +128,13 @@ class WrapperMultiple():
     """
     def __init__(self,file_path,model_path,proto_path,output_path):
         if(file_path!="0" and os.path.isfile(file_path)):
-            self.__file_path=file_path
+            self.file_path=file_path
         else:
             print(errori['video_in'])
-            self.__file_path=0
-        self.__output_path=output_path
-        self.__model_path=model_path
-        self.__proto_path=proto_path
+            self.file_path=0
+        self.output_path=output_path
+        self.model_path=model_path
+        self.proto_path=proto_path
         self.oldpars=[]
         self.threshold = 1/3/np.e #=~0.1226
         self.colors = [ [255,200,100], [0,100,255], [0,255,255] , [0,255,0], [0,100,255], [0,255,255],
@@ -213,72 +148,7 @@ class WrapperMultiple():
         self.POSE_PAIRS= [[0,1], [1,2], [2,3], [3,4], [1,5],
             [5,6], [6,7], [1,14], [14,8], [8,9], 
             [9,10], [14,11], [11,12], [12,13]]
-    """
-    getter file_path
-    """
-    @property
-    def file_path(self):
-        return str(self.__file_path)
-
-    """
-    setter file_path
-    """
-    @file_path.setter
-    def file_path(self,file_path):
-        if(os.path.isfile(file_path)):
-            self.__file_path=file_path
-        else:
-            print(errori['video_in'])
-            self.__file_path=0
-
-    """
-    getter output_path
-    """
-    @property
-    def output_path(self):
-        return str(self.__output_path)
-
-    """
-    setter output_path
-    """
-    @output_path.setter
-    def output_path(self,output_path=""):
-        self.__output_path=output_path
-
-    """
-    getter model_path
-    """
-    @property
-    def model_path(self):
-        return str(self.__model_path)
-
-    """
-    setter model_path
-    """
-    @model_path.setter
-    def model_path(self,model_path):
-        self.__model_path=model_path
-
-    """
-    getter proto_path
-    """
-    @property
-    def proto_path(self):
-        return str(self.__proto_path)
-
-    """
-    setter proto_path
-    """
-    @proto_path.setter
-    def proto_path(self,proto_path):
-        self.__proto_path=proto_path
-
-    """
-    displayer of all local variables
-    """
-    def all_args(self):
-        return ", ".join([self.file_path,self.model_path,self.proto_path,self.output_path])
-
+    
     """
     get all keypoints present in the image from the probability map
     """
