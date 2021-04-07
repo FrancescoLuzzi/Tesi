@@ -4,134 +4,17 @@ import os
 
 errori={"video_in":"Nessun file trovato in questo path, default alla telecamera"}
 
-class WrapperSingle():
+class Wrapper():
     r"""
-    Questa classe sara il wrapper e l'utilizzatore del modello di OpenPose
+    Questa classe sara il wrapper e l'utilizzatore del modello MPI di OpenPose
     """
-    def __init__(self,file_path,model_path,proto_path,output_path):
+    def __init__(self,file_path,model_path,proto_path,output_path,multiple):
         if(file_path!="0" and os.path.isfile(file_path)):
             self.file_path=file_path
         else:
             print(errori['video_in'])
             self.file_path=0
-        self.output_path=output_path
-        self.model_path=model_path
-        self.proto_path=proto_path
-        self.oldpars=[]
-        self.threshold = 0.1
-        self.colors = [ [255,200,100], [0,100,255], [0,255,255] , [0,255,0], [0,100,255], [0,255,255],
-         [0,255,0],[0,100,255] , [255,0,255], [0,0,255], [255,0,0], [255,0,255],
-         [0,0,255], [255,0,0], [0,0,128]]
-
-    """
-    Definizione run dell'an_alisi con differenzazione tra presenza di file di output
-    (an_alisi video e creazione di un file di outout) o meno (live feed dalla fotocamera).
-    """
-    def run_simulation(self):
-        cap=""
-        if(self.file_path=="0"):
-            cap= cv.VideoCapture(0)
-        else:
-            cap= cv.VideoCapture(self.file_path)
-
-        if (cap.isOpened() == False):
-            print("Error opening video stream or file")
-        net=cv.dnn.readNetFromCaffe(self.proto_path,self.model_path)
-        self.frame_width=int(cap.get(3))
-        self.frame_height=int(cap.get(4))
-        self.in_height=368
-        self.in_width=int((self.in_height/self.frame_height)*self.frame_width)
-        if(self.output_path=="None"):
-            self.run_live_feed(cap,net)
-        else:
-            self.run_file(cap,net,self.output_path)
-    
-    def single_detection(self,net,frame):
-        in_blob = cv.dnn.blobFromImage(frame, 1.0 / 255, (self.in_width, self.in_height), (0, 0, 0), swapRB=False, crop=False)
-        net.setInput(in_blob)
-        output = net.forward()
-        H = output.shape[2]
-        W = output.shape[3]
-        # Empty list to store the detected keypoints
-        points = []
-        
-        for i in range(15): #I want only right shoulder(2), neck(1) and head(0) keypoints
-            
-            # confidence map of corresponding body's part.
-            prob_map = output[0, i, :, :]
-
-            # Find global maxima of the prob_map.
-            min_val, prob, min_loc, point = cv.minMaxLoc(prob_map)
-
-            # Scale the point to fit on the origin_al image
-            x = (self.frame_width * point[0]) / W
-            y = (self.frame_height * point[1]) / H
-            if prob > self.threshold :
-                points.append((int(x), int(y)))
-                cv.circle(frame, (int(x),int(y)), 3, self.colors[i], thickness=-1, lineType=cv.FILLED)
-            else :
-                points.append(None)
-        #Find median point between neck and head then use the distance between neck and shoulder to
-        #estimate the radius of the circle to cover the face in interest
-        if points[0]!=None and points[1]!=None:
-            head_x,head_y=points[0]
-            neck_x,neck_y=points[1]
-            median_x=int(abs(head_x-neck_x)/2+min([head_x,neck_x]))
-            median_y=int(abs(head_y-neck_y)/2+min([head_y,neck_y]))
-            radius=int(abs(head_y-neck_y)*0.8)
-            self.oldpars=[median_x,median_y,radius]
-            #cv.circle(frame, (median_x, median_y), radius, (0, 0, 0), thickness=-1, lineType=cv.FILLED)
-        elif len(self.oldpars)!=0:
-            cv.circle(frame, (self.oldpars[0], self.oldpars[1]), self.oldpars[2], (0, 0, 0), thickness=-1, lineType=cv.FILLED)
-        return frame
-    
-    
-    """
-    Se non viene dato in input il path/nome_file_out si avrà la creazione di un_a finestra in cui si vedrà l'output 
-    """
-    def run_live_feed(self,cap,net):
-        while(cap.isOpened()):
-            # Capture frame-by-frame
-            ret, frame = cap.read()
-            if ret == True:
-                frame=self.single_detection(net,frame)
-                cv.imshow("Output-Keypoints",frame)
-                if cv.waitKey(0) & 0xFF == ord('q'): #cv.waitKey(1) if you want to reproduce a video smoothly else cv.waitKey(0) for a still image
-                    break
-            else:
-                break
-        cap.release()
-        cv.destroyAllWindows()
-
-    """
-    Se viene dato in input path/nome_file_out l'output dell'elaborazione verrà scritto su file definito
-    """
-    def run_file(self,cap,net,output_path):
-        #out = cv.VideoWriter(output_path, cv.VideoWriter_fourcc(*'DIVX'), 15, (self.frame_width,self.frame_height))
-        while(cap.isOpened()):
-            # Capture frame-by-frame
-            ret, frame = cap.read()
-            if ret == True:
-                frame=self.single_detection(net,frame)
-                cv.imwrite(output_path,frame)
-                #out.write(frame)
-            else:
-                break
-        cap.release()
-        #out.release()
-
-
-
-class WrapperMultiple():
-    r"""
-    Questa classe sara il wrapper e l'utilizzatore del modello di OpenPose
-    """
-    def __init__(self,file_path,model_path,proto_path,output_path):
-        if(file_path!="0" and os.path.isfile(file_path)):
-            self.file_path=file_path
-        else:
-            print(errori['video_in'])
-            self.file_path=0
+        self.multiple=multiple
         self.output_path=output_path
         self.model_path=model_path
         self.proto_path=proto_path
@@ -148,7 +31,7 @@ class WrapperMultiple():
         self.POSE_PAIRS= [[0,1], [1,2], [2,3], [3,4], [1,5],
             [5,6], [6,7], [1,14], [14,8], [8,9], 
             [9,10], [14,11], [11,12], [12,13]]
-    
+
     """
     get all keypoints present in the image from the probability map
     """
@@ -351,7 +234,53 @@ class WrapperMultiple():
             radius=int(np.sqrt(np.power(B[0]-B[1],2)+np.power(A[0]-A[1],2))*0.6)
             cv.circle(frame, (median_x, median_y), radius, (0, 0, 0), thickness=-1, lineType=cv.FILLED)
         return frame
+    
+    """
+    Get the maxima of the keypoints in the image, hopefully from the same person
+    """
+    def single_detection(self,net,frame):
+        in_blob = cv.dnn.blobFromImage(frame, 1.0 / 255, (self.in_width, self.in_height), (0, 0, 0), swapRB=False, crop=False)
+        net.setInput(in_blob)
+        output = net.forward()
+        H = output.shape[2]
+        W = output.shape[3]
+        # Empty list to store the detected keypoints
+        points = []
         
+        for i in range(15): #I want only right shoulder(2), neck(1) and head(0) keypoints
+            
+            # confidence map of corresponding body's part.
+            prob_map = output[0, i, :, :]
+
+            # Find global maxima of the prob_map.
+            min_val, prob, min_loc, point = cv.minMaxLoc(prob_map)
+
+            # Scale the point to fit on the origin_al image
+            x = (self.frame_width * point[0]) / W
+            y = (self.frame_height * point[1]) / H
+            if prob > self.threshold :
+                points.append((int(x), int(y)))
+                cv.circle(frame, (int(x),int(y)), 3, self.colors[i], thickness=-1, lineType=cv.FILLED)
+            else :
+                points.append(None)
+        #Find median point between neck and head then use the distance between neck and shoulder to
+        #estimate the radius of the circle to cover the face in interest
+        if points[0]!=None and points[1]!=None:
+            head_x,head_y=points[0]
+            neck_x,neck_y=points[1]
+            median_x=int(abs(head_x-neck_x)/2+min([head_x,neck_x]))
+            median_y=int(abs(head_y-neck_y)/2+min([head_y,neck_y]))
+            radius=int(abs(head_y-neck_y)*0.8)
+            self.oldpars=[median_x,median_y,radius]
+            #cv.circle(frame, (median_x, median_y), radius, (0, 0, 0), thickness=-1, lineType=cv.FILLED)
+        elif len(self.oldpars)!=0:
+            cv.circle(frame, (self.oldpars[0], self.oldpars[1]), self.oldpars[2], (0, 0, 0), thickness=-1, lineType=cv.FILLED)
+        return frame
+    
+    """
+    Definizione run dell'analisi con differenzazione tra presenza di file di output
+    (an_alisi video e creazione di un file di outout) o meno (live feed dalla fotocamera).
+    """
     def run_simulation(self):
         cap=""
         if(self.file_path=="0"):
@@ -366,31 +295,25 @@ class WrapperMultiple():
         self.frame_height=int(cap.get(4))
         self.in_height=368
         self.in_width=int((self.in_height/self.frame_height)*self.frame_width)
-        if(self.output_path=="None"):
+        if self.output_path==None:
             self.run_live_feed(cap,net)
         else:
             self.run_file(cap,net,self.output_path)
 
-    def run_file(self,cap,net,output_path):
-        #out = cv.VideoWriter(output_path, cv.VideoWriter_fourcc(*'DIVX'), 15, (self.frame_width,self.frame_height))
-        while(cap.isOpened()):
-            # Capture frame-by-frame
-            ret, frame = cap.read()
-            if ret == True:
-                frame=self.multiple_detections(net,frame)
-                cv.imwrite(output_path,frame)
-                #out.write(frame)
-            else:
-                break
-        cap.release()
-        #out.release()
-
+    """
+    Se non viene dato in input il path/nome_file_out si avrà la creazione di un_a finestra in cui si vedrà l'output 
+    """
     def run_live_feed(self,cap,net):
-        while(cap.isOpened()):
+        get_frame=None
+        if self.multiple==True:
+            get_frame=self.multiple_detections
+        else:
+            get_frame=self.single_detection
+        while cap.isOpened():
             # Capture frame-by-frame
             ret, frame = cap.read()
             if ret == True:
-                frame=self.multiple_detections(net,frame)
+                frame=get_frame(net,frame)
                 cv.imshow("Output-Keypoints",frame)
                 if cv.waitKey(0) & 0xFF == ord('q'): #cv.waitKey(1) if you want to reproduce a video smoothly else cv.waitKey(0) for a still image
                     break
@@ -398,3 +321,26 @@ class WrapperMultiple():
                 break
         cap.release()
         cv.destroyAllWindows()
+
+    """
+    Se viene dato in input path/nome_file_out l'output dell'elaborazione verrà scritto su file definito
+    """
+    def run_file(self,cap,net,output_path):
+        get_frame=None
+        if self.multiple==True:
+            get_frame=self.multiple_detections
+        else:
+            get_frame=self.single_detection
+        #out = cv.VideoWriter(output_path, cv.VideoWriter_fourcc(*'DIVX'), 15, (self.frame_width,self.frame_height))
+        while(cap.isOpened()):
+            # Capture frame-by-frame
+            ret, frame = cap.read()
+            if ret == True:
+                frame=get_frame(net,frame)
+                cv.imwrite(output_path,frame)
+                #out.write(frame)
+            else:
+                break
+        cap.release()
+        #out.release()
+
