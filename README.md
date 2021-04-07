@@ -1,6 +1,6 @@
 # Tesi
 
-![Python version](https://img.shields.io/badge/python-python%203.8-brightgreen)
+![Python version](https://img.shields.io/badge/python-python%203.9-brightgreen)
 
 The **tags** to launch this program are:
 * **-i** to give a relative or absolute path to an immage, if omitted default to the camera;
