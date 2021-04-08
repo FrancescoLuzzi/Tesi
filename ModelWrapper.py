@@ -338,17 +338,18 @@ class Wrapper():
             get_frame=self.multiple_detections
         else:
             get_frame=self.single_detection
-        out = cv.VideoWriter(output_path, cv.VideoWriter_fourcc(*'DIVX'), 30, (self.frame_width,self.frame_height))
+        #out = cv.VideoWriter(output_path, cv.VideoWriter_fourcc(*'DIVX'), 30, (self.frame_width,self.frame_height))
         while(cap.isOpened()):
             # Capture frame-by-frame
             ret, frame = cap.read()
             if ret == True:
                 start_time=time.time()
                 frame=get_frame(net,frame)
+                cv.imwrite(output_path,frame)
                 print( colored("{:.2f} fps".format(1/float(time.time()-start_time)),"red"))
-                out.write(frame)
+                #out.write(frame)
             else:
                 break
         cap.release()
-        out.release()
+        #out.release()
 
