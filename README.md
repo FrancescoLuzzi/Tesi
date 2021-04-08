@@ -11,3 +11,4 @@ The **tags** to launch this program are:
 ## Prerequisites
 * opencv 4.5.1
 * numpy
+* termcolor

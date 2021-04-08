@@ -1,6 +1,8 @@
 import numpy as np
 import cv2 as cv
 import os
+import time
+from termcolor import colored
 
 errori={"video_in":"Nessun file trovato in questo path, default alla telecamera"}
 
@@ -19,7 +21,7 @@ class Wrapper():
         self.model_path=model_path
         self.proto_path=proto_path
         self.oldpars=[]
-        self.threshold = 1/3/np.e #=~0.1226
+        self.threshold = 0.12
         self.colors = [ [255,200,100], [0,100,255], [0,255,255] , [0,255,0], [0,100,255], [0,255,255],
          [0,255,0],[0,100,255] , [255,0,255], [0,0,255], [255,0,0], [255,0,255],
          [0,0,255], [255,0,0], [0,0,128]]
@@ -256,12 +258,15 @@ class Wrapper():
             min_val, prob, min_loc, point = cv.minMaxLoc(prob_map)
 
             # Scale the point to fit on the origin_al image
-            x = (self.frame_width * point[0]) / W
-            y = (self.frame_height * point[1]) / H
+            x = int((self.frame_width * point[0]) / W)
+            y = int((self.frame_height * point[1]) / H)
+            
             if prob > self.threshold :
-                points.append((int(x), int(y)))
-                cv.circle(frame, (int(x),int(y)), 3, self.colors[i], thickness=-1, lineType=cv.FILLED)
+                points.append((x, y))
+                print(f"{self.keypoints_mapping[i]} detected point: [{x},{y}]")
+                cv.circle(frame, (x,y), 3, self.colors[i], thickness=-1, lineType=cv.FILLED)
             else :
+                print(f"{self.keypoints_mapping[i]} detected point: None")
                 points.append(None)
         #Find median point between neck and head then use the distance between neck and shoulder to
         #estimate the radius of the circle to cover the face in interest
@@ -272,7 +277,7 @@ class Wrapper():
             median_y=int(abs(head_y-neck_y)/2+min([head_y,neck_y]))
             radius=int(abs(head_y-neck_y)*0.8)
             self.oldpars=[median_x,median_y,radius]
-            #cv.circle(frame, (median_x, median_y), radius, (0, 0, 0), thickness=-1, lineType=cv.FILLED)
+            cv.circle(frame, (median_x, median_y), radius, (0, 0, 0), thickness=-1, lineType=cv.FILLED)
         elif len(self.oldpars)!=0:
             cv.circle(frame, (self.oldpars[0], self.oldpars[1]), self.oldpars[2], (0, 0, 0), thickness=-1, lineType=cv.FILLED)
         return frame
@@ -313,7 +318,9 @@ class Wrapper():
             # Capture frame-by-frame
             ret, frame = cap.read()
             if ret == True:
+                start_time=time.time()
                 frame=get_frame(net,frame)
+                print( colored("{:.2f} fps".format(1/float(time.time()-start_time)),"red"))
                 cv.imshow("Output-Keypoints",frame)
                 if cv.waitKey(0) & 0xFF == ord('q'): #cv.waitKey(1) if you want to reproduce a video smoothly else cv.waitKey(0) for a still image
                     break
@@ -331,16 +338,17 @@ class Wrapper():
             get_frame=self.multiple_detections
         else:
             get_frame=self.single_detection
-        #out = cv.VideoWriter(output_path, cv.VideoWriter_fourcc(*'DIVX'), 15, (self.frame_width,self.frame_height))
+        out = cv.VideoWriter(output_path, cv.VideoWriter_fourcc(*'DIVX'), 30, (self.frame_width,self.frame_height))
         while(cap.isOpened()):
             # Capture frame-by-frame
             ret, frame = cap.read()
             if ret == True:
+                start_time=time.time()
                 frame=get_frame(net,frame)
-                cv.imwrite(output_path,frame)
-                #out.write(frame)
+                print( colored("{:.2f} fps".format(1/float(time.time()-start_time)),"red"))
+                out.write(frame)
             else:
                 break
         cap.release()
-        #out.release()
+        out.release()
 
