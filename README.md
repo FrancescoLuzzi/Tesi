@@ -12,6 +12,6 @@ The **tags** to launch this program are:
 [OpenPose's README.md](https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/master/README.md).
 
 ## Prerequisites
-* opencv 4.5.1
+* opencv-python 4.5.1
 * numpy
 * termcolor
