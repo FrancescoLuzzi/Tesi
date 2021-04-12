@@ -273,9 +273,9 @@ class Wrapper():
         if points[0]!=None and points[1]!=None:
             head_x,head_y=points[0]
             neck_x,neck_y=points[1]
-            median_x=int(abs(head_x-neck_x)/2+min([head_x,neck_x]))
-            median_y=int(abs(head_y-neck_y)/2+min([head_y,neck_y]))
-            radius=int(abs(head_y-neck_y)*0.8)
+            median_x=int((head_x+neck_x)/2)
+            median_y=int((head_y+neck_y)/2)
+            radius=int(abs(head_y-neck_y)*0.6)
             self.oldpars=[median_x,median_y,radius]
             cv.circle(frame, (median_x, median_y), radius, (0, 0, 0), thickness=-1, lineType=cv.FILLED)
         elif len(self.oldpars)!=0:
