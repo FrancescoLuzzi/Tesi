@@ -2,7 +2,6 @@ import numpy as np
 import cv2 as cv
 import os
 import time
-from termcolor import colored
 
 errori={"video_in":"Nessun file trovato in questo path, default alla telecamera"}
 
@@ -320,7 +319,7 @@ class Wrapper():
             if ret == True:
                 start_time=time.time()
                 frame=get_frame(net,frame)
-                print( colored("{:.2f} fps".format(1/float(time.time()-start_time)),"red"))
+                print("{:.2f} fps".format(1/float(time.time()-start_time)))
                 cv.imshow("Output-Keypoints",frame)
                 if cv.waitKey(0) & 0xFF == ord('q'): #cv.waitKey(1) if you want to reproduce a video smoothly else cv.waitKey(0) for a still image
                     break
@@ -346,7 +345,7 @@ class Wrapper():
                 start_time=time.time()
                 frame=get_frame(net,frame)
                 cv.imwrite(output_path,frame)
-                print( colored("{:.2f} fps".format(1/float(time.time()-start_time)),"red"))
+                print("{:.2f} fps".format(1/float(time.time()-start_time)))
                 #out.write(frame)
             else:
                 break
