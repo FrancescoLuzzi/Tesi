@@ -3,7 +3,6 @@ import cv2 as cv
 import os
 import time
 
-errori={"video_in":"Nessun file trovato in questo path, default alla telecamera"}
 
 class Wrapper():
     r"""
@@ -13,7 +12,6 @@ class Wrapper():
         if(file_path!="0" and os.path.isfile(file_path)):
             self.file_path=file_path
         else:
-            print(errori['video_in'])
             self.file_path=0
         self.multiple=multiple
         self.output_path=output_path
@@ -32,7 +30,7 @@ class Wrapper():
         self.POSE_PAIRS= [[0,1], [1,2], [2,3], [3,4], [1,5],
             [5,6], [6,7], [1,14], [14,8], [8,9], 
             [9,10], [14,11], [11,12], [12,13]]
-
+        self.net=cv.dnn.readNetFromCaffe(self.proto_path,self.model_path)
     """
     get all keypoints present in the image from the probability map
     """
@@ -174,11 +172,11 @@ class Wrapper():
     (an_alisi video e creazione di un file di outout) o meno (live feed dalla fotocamera).
     """
     
-    def multiple_detections(self,net,frame):
+    def multiple_detections(self,frame):
         #blob and forwrd to the network
         in_blob = cv.dnn.blobFromImage(frame, 1.0 / 255, (self.in_width, self.in_height),(0, 0, 0), swapRB=False, crop=False)
-        net.setInput(in_blob)
-        output = net.forward()
+        self.net.setInput(in_blob)
+        output = self.net.forward()
         
         #set up of result points
         self.detected_keypoints = []
@@ -199,13 +197,8 @@ class Wrapper():
                 keypoints_with_id.append(keypoints[i] + (keypoint_id,))
                 self.keypoints_list = np.vstack([self.keypoints_list, keypoints[i]])
                 keypoint_id += 1
-
             self.detected_keypoints.append(keypoints_with_id)
-
-        #draw all the keypoints
-        for i in range(self.n_points):
-            for j in range(len(self.detected_keypoints[i])):
-                cv.circle(frame, self.detected_keypoints[i][j][0:2], 4, self.colors[i], -1, cv.LINE_AA)
+               
 
         #get vaild_paris from the get_valid_pairs function
         valid_pairs, invalid_pairs = self.get_valid_pairs(output)
@@ -220,11 +213,13 @@ class Wrapper():
                     continue
                 B = np.int32(self.keypoints_list[index.astype(int), 0])
                 A = np.int32(self.keypoints_list[index.astype(int), 1])
+                cv.circle(frame, (B[0], A[0]), 4, self.colors[i], -1, cv.LINE_AA)
+                cv.circle(frame, (B[1], A[1]), 4, self.colors[i], -1, cv.LINE_AA)
                 cv.line(frame, (B[0], A[0]), (B[1], A[1]), self.colors[i], 3, cv.LINE_AA)
 
         #For each person i get the neck,head pair then find the distance between them and
         #the midpoint which will be the center of the circle that covers the face
-        for n in range(len(personwise_keypoints)): 
+        """for n in range(len(personwise_keypoints)): 
             index = personwise_keypoints[n][np.array(self.POSE_PAIRS[0])]
             if -1 in index:
                 continue
@@ -233,16 +228,16 @@ class Wrapper():
             median_x=int(np.absolute(B[0]-B[1])/2+min([B[0],B[1]]))
             median_y=int(np.absolute(A[0]-A[1])/2+min([A[0],A[1]]))
             radius=int(np.sqrt(np.power(B[0]-B[1],2)+np.power(A[0]-A[1],2))*0.6)
-            cv.circle(frame, (median_x, median_y), radius, (0, 0, 0), thickness=-1, lineType=cv.FILLED)
+            cv.circle(frame, (median_x, median_y), radius, (0, 0, 0), thickness=-1, lineType=cv.FILLED)"""
         return frame
     
     """
     Get the maxima of the keypoints in the image, hopefully from the same person
     """
-    def single_detection(self,net,frame):
+    def single_detection(self,frame):
         in_blob = cv.dnn.blobFromImage(frame, 1.0 / 255, (self.in_width, self.in_height), (0, 0, 0), swapRB=False, crop=False)
-        net.setInput(in_blob)
-        output = net.forward()
+        self.net.setInput(in_blob)
+        output = self.net.forward()
         H = output.shape[2]
         W = output.shape[3]
         # Empty list to store the detected keypoints
@@ -269,7 +264,7 @@ class Wrapper():
                 points.append(None)
         #Find median point between neck and head then use the distance between neck and shoulder to
         #estimate the radius of the circle to cover the face in interest
-        if points[0]!=None and points[1]!=None:
+        """if points[0]!=None and points[1]!=None:
             head_x,head_y=points[0]
             neck_x,neck_y=points[1]
             median_x=int((head_x+neck_x)/2)
@@ -279,6 +274,7 @@ class Wrapper():
             cv.circle(frame, (median_x, median_y), radius, (0, 0, 0), thickness=-1, lineType=cv.FILLED)
         elif len(self.oldpars)!=0:
             cv.circle(frame, (self.oldpars[0], self.oldpars[1]), self.oldpars[2], (0, 0, 0), thickness=-1, lineType=cv.FILLED)
+        """
         return frame
     
     """
@@ -294,20 +290,21 @@ class Wrapper():
 
         if (cap.isOpened() == False):
             print("Error opening video stream or file")
-        net=cv.dnn.readNetFromCaffe(self.proto_path,self.model_path)
+        #net.setPreferableBackend(cv.dnn.DNN_BACKEND_CUDA)
+        #net.setPreferableTarget(cv.dnn.DNN_TARGET_CUDA)
         self.frame_width=int(cap.get(3))
         self.frame_height=int(cap.get(4))
         self.in_height=368
         self.in_width=int((self.in_height/self.frame_height)*self.frame_width)
         if self.output_path==None:
-            self.run_live_feed(cap,net)
+            self.run_live_feed(cap)
         else:
-            self.run_file(cap,net,self.output_path)
+            self.run_file(cap,self.output_path)
 
     """
     Se non viene dato in input il path/nome_file_out si avrà la creazione di un_a finestra in cui si vedrà l'output 
     """
-    def run_live_feed(self,cap,net):
+    def run_live_feed(self,cap):
         get_frame=None
         if self.multiple==True:
             get_frame=self.multiple_detections
@@ -318,7 +315,7 @@ class Wrapper():
             ret, frame = cap.read()
             if ret == True:
                 start_time=time.time()
-                frame=get_frame(net,frame)
+                frame=get_frame(frame)
                 print("{:.2f} fps".format(1/float(time.time()-start_time)))
                 cv.imshow("Output-Keypoints",frame)
                 if cv.waitKey(0) & 0xFF == ord('q'): #cv.waitKey(1) if you want to reproduce a video smoothly else cv.waitKey(0) for a still image
@@ -331,7 +328,7 @@ class Wrapper():
     """
     Se viene dato in input path/nome_file_out l'output dell'elaborazione verrà scritto su file definito
     """
-    def run_file(self,cap,net,output_path):
+    def run_file(self,cap,output_path):
         get_frame=None
         if self.multiple==True:
             get_frame=self.multiple_detections
@@ -343,7 +340,7 @@ class Wrapper():
             ret, frame = cap.read()
             if ret == True:
                 start_time=time.time()
-                frame=get_frame(net,frame)
+                frame=get_frame(frame)
                 cv.imwrite(output_path,frame)
                 print("{:.2f} fps".format(1/float(time.time()-start_time)))
                 #out.write(frame)
