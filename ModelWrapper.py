@@ -19,6 +19,9 @@ class Wrapper():
         self.proto_path=proto_path
         self.oldpars=[]
         self.threshold = 0.12
+        self.n_interp_samples = 10
+        self.paf_score_th = 0.1
+        self.conf_th =0.7
         self.colors = [ [255,200,100], [0,100,255], [0,255,255] , [0,255,0], [0,100,255], [0,255,255],
          [0,255,0],[0,100,255] , [255,0,255], [0,0,255], [255,0,0], [255,0,255],
          [0,0,255], [255,0,0], [0,0,128]]
@@ -60,9 +63,6 @@ class Wrapper():
     def get_valid_pairs(self,output):
         valid_pairs = []
         invalid_pairs = []
-        n_interp_samples = 10
-        paf_score_th = 0.1
-        conf_th =0.7
         # loop for every POSE_PAIR
         for k in range(self.n_points-1):
             # A->B constitute a limb
@@ -101,10 +101,10 @@ class Wrapper():
                         else:
                             continue
                         #Create an array of 10 interpolated points on the line joining the two keypoints.
-                        interp_coord = list(zip(np.linspace(cand_a[i][0], cand_b[j][0], num=n_interp_samples),
-                                                np.linspace(cand_a[i][1], cand_b[j][1], num=n_interp_samples)))
+                        interp_coord = list(zip(np.linspace(cand_a[i][0], cand_b[j][0], num=self.n_interp_samples),
+                                                np.linspace(cand_a[i][1], cand_b[j][1], num=self.n_interp_samples)))
                         paf_interp = []
-                        for k in range(n_interp_samples):
+                        for k in range(self.n_interp_samples):
                             paf_interp.append([paf_a[int(round(interp_coord[k][1])), int(round(interp_coord[k][0]))],
                                             paf_b[int(round(interp_coord[k][1])), int(round(interp_coord[k][0]))] ])
                         # Find avg_PAF_score as the midpoint of all the PAF_scores
@@ -113,7 +113,7 @@ class Wrapper():
 
                         # Check if the connection is valid
                         # If the fraction of interpolated vectors aligned with PAF is higher then threshold -> Valid Pair
-                        if ( len(np.where(paf_scores > paf_score_th)[0]) / n_interp_samples ) > conf_th and avg_paf_score > max_score :
+                        if ( len(np.where(paf_scores > self.paf_score_th)[0]) / self.n_interp_samples ) > self.conf_th and avg_paf_score > max_score :
                             max_j = j
                             max_score = avg_paf_score
                             found = 1
@@ -153,11 +153,10 @@ class Wrapper():
                             found = 1
                             break
                     #if the part_A is found (Start of the connection) then add part_B to the person
-                    if found:
+                    if found==1:
                         personwise_keypoints[person_idx][index_b] = part_Bs[i]
                         personwise_keypoints[person_idx][-1] += self.keypoints_list[part_Bs[i].astype(int), 2] + valid_pairs[k][i][2]
-
-                    # if find no partA in the person keypoints, add one
+                    # if find no partA in the person keypoints, add one person
                     elif not found and k < (self.n_points-1):
                         row = -1 * np.ones((self.n_points+1))
                         row[index_a] = part_As[i]
