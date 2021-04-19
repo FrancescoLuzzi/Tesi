@@ -18,10 +18,14 @@ class Wrapper():
         self.model_path=model_path
         self.proto_path=proto_path
         self.oldpars=[]
+        #threshold to detect the keypoint
         self.threshold = 0.12
+        #number of points on PAF
         self.n_interp_samples = 10
-        self.paf_score_th = 0.1
-        self.conf_th =0.7
+        #threshold for paf score
+        self.paf_score_th = 0.12
+        #threshold for pair to get accepted
+        self.conf_th =0.8
         self.colors = [ [255,200,100], [0,100,255], [0,255,255] , [0,255,0], [0,100,255], [0,255,255],
          [0,255,0],[0,100,255] , [255,0,255], [0,0,255], [255,0,0], [255,0,255],
          [0,0,255], [255,0,0], [0,0,128]]
@@ -34,6 +38,8 @@ class Wrapper():
             [5,6], [6,7], [1,14], [14,8], [8,9], 
             [9,10], [14,11], [11,12], [12,13]]
         self.net=cv.dnn.readNetFromCaffe(self.proto_path,self.model_path)
+        self.net.setPreferableBackend(cv.dnn.DNN_BACKEND_CUDA)
+        self.net.setPreferableTarget(cv.dnn.DNN_TARGET_CUDA)
     """
     get all keypoints present in the image from the probability map
     """
@@ -117,14 +123,14 @@ class Wrapper():
                             max_j = j
                             max_score = avg_paf_score
                             found = 1
-                    # Append the connection to the list [[x,y],scpre]
+                    # Append the connection to the list [[x,y],score]
                     if found:
                         valid_pair = np.append(valid_pair, [[cand_a[i][3], cand_b[max_j][3], max_score]], axis=0)
 
                 # Append the detected connections to the global list
                 valid_pairs.append(valid_pair)
             else: # If no keypoints are detected
-                print("No Connection : k = {}".format(k))
+                #print("No Connection : k = {}".format(k))
                 invalid_pairs.append(k)
                 valid_pairs.append([])
         return valid_pairs, invalid_pairs
@@ -189,7 +195,7 @@ class Wrapper():
             prob_map = output[0,part,:,:]
             prob_map = cv.resize(prob_map, (frame.shape[1], frame.shape[0]))
             keypoints = self.get_keypoints(prob_map)
-            print("Keypoints - {} : {}".format(self.keypoints_mapping[part], keypoints))
+            #print("Keypoints - {} : {}".format(self.keypoints_mapping[part], keypoints))
             keypoints_with_id = []
             for i in range(len(keypoints)):
                 #add to the keypoint tuple point_x, point_y, probability the keypoint_id (0=Head,...)
@@ -256,10 +262,10 @@ class Wrapper():
             
             if prob > self.threshold :
                 points.append((x, y))
-                print(f"{self.keypoints_mapping[i]} detected point: [{x},{y}]")
+                #print(f"{self.keypoints_mapping[i]} detected point: [{x},{y}]")
                 cv.circle(frame, (x,y), 3, self.colors[i], thickness=-1, lineType=cv.FILLED)
             else :
-                print(f"{self.keypoints_mapping[i]} detected point: None")
+                #print(f"{self.keypoints_mapping[i]} detected point: None")
                 points.append(None)
         #Find median point between neck and head then use the distance between neck and shoulder to
         #estimate the radius of the circle to cover the face in interest
@@ -289,8 +295,6 @@ class Wrapper():
 
         if (cap.isOpened() == False):
             print("Error opening video stream or file")
-        #net.setPreferableBackend(cv.dnn.DNN_BACKEND_CUDA)
-        #net.setPreferableTarget(cv.dnn.DNN_TARGET_CUDA)
         self.frame_width=int(cap.get(3))
         self.frame_height=int(cap.get(4))
         self.in_height=368

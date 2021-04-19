@@ -7,7 +7,7 @@ modello=[".\\mpi\\pose_iter_160000.caffemodel",".\\mpi\\pose_deploy_linevec_fast
 def main():
     parser = argparse.ArgumentParser(description='Process images')
     parser.add_argument("--videoIn","-i",type=str, default="0" ,help="input file")
-    parser.add_argument("--videoOut","-o",type=str,help="file di output opzionale")
+    parser.add_argument("--videoOut","-o",type=str,help="file di output opzionale, nel caso si abbia dato una directory con -d sarà la directory di arrivo")
     parser.add_argument("--dir","-d",type=str ,help="input file")
     parser.add_argument("-m",default=False, action="store_true")
     args=parser.parse_args()
