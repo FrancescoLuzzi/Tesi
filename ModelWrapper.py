@@ -40,6 +40,11 @@ class Wrapper():
         self.net=cv.dnn.readNetFromCaffe(self.proto_path,self.model_path)
         self.net.setPreferableBackend(cv.dnn.DNN_BACKEND_CUDA)
         self.net.setPreferableTarget(cv.dnn.DNN_TARGET_CUDA)
+        """
+        #this is for computing resizes with gpu
+        self.gpu_frame_paf_a=cv.cuda_GpuMat()
+        self.gpu_frame_paf_b=cv.cuda_GpuMat()
+        self.gpu_frame_prob_map=cv.cuda_GpuMat()"""
     """
     get all keypoints present in the image from the probability map
     """
@@ -74,9 +79,16 @@ class Wrapper():
             # A->B constitute a limb
             paf_a = output[0, self.map_idx[k][0], :, :]
             paf_b = output[0, self.map_idx[k][1], :, :]
-            paf_a = cv.resize(paf_a, (self.frame_width, self.frame_height))
-            paf_b = cv.resize(paf_b, (self.frame_width, self.frame_height))
-
+            """
+            #this is for computing resizes with gpu
+            self.gpu_frame_paf_a.upload(paf_a)
+            self.gpu_frame_paf_b.upload(paf_b)
+            self.gpu_frame_paf_a = cv.cuda.resize(self.gpu_frame_paf_a, (self.frame_width, self.frame_height))
+            self.gpu_frame_paf_b = cv.cuda.resize(self.gpu_frame_paf_b, (self.frame_width, self.frame_height))
+            paf_b = self.gpu_frame_paf_b.download()
+            paf_a=self.gpu_frame_paf_a.download()"""
+            paf_a=cv.resize(paf_a, (self.frame_width, self.frame_height))
+            paf_b=cv.resize(paf_b, (self.frame_width, self.frame_height))
             # Find the keypoints for the first and second limb
             # all keypoints for the POSE_PAIR[k][0] keypoint (0=Head,...)
             cand_a = self.detected_keypoints[self.POSE_PAIRS[k][0]]
@@ -193,7 +205,12 @@ class Wrapper():
 
         for part in range(self.n_points):
             prob_map = output[0,part,:,:]
-            prob_map = cv.resize(prob_map, (frame.shape[1], frame.shape[0]))
+            """
+            #this is for computing resizes with gpu
+            self.gpu_frame_prob_map.upload(prob_map)
+            self.gpu_frame_prob_map = cv.cuda.resize(self.gpu_frame_prob_map, (frame.shape[1], frame.shape[0]))
+            prob_map=self.gpu_frame_prob_map.download()"""
+            prob_map=cv.resize(prob_map, (frame.shape[1], frame.shape[0]))
             keypoints = self.get_keypoints(prob_map)
             #print("Keypoints - {} : {}".format(self.keypoints_mapping[part], keypoints))
             keypoints_with_id = []
