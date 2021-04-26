@@ -292,6 +292,9 @@ class Wrapper():
                 points.append(None)
         #Find median point between neck and head then use the distance between neck and shoulder to
         #estimate the radius of the circle to cover the face in interest
+        for x in range(self.n_points-1):
+            par1,par2=self.POSE_PAIRS[x]
+            cv.line(frame, points[par1], points[par2], self.colors[x], 3, cv.LINE_AA)
         """if points[0]!=None and points[1]!=None:
             head_x,head_y=points[0]
             neck_x,neck_y=points[1]
