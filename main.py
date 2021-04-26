@@ -10,11 +10,13 @@ def main():
     parser.add_argument("--videoOut","-o",type=str,help="file di output opzionale, nel caso si abbia dato una directory con -d sarà la directory di arrivo")
     parser.add_argument("--dir","-d",type=str ,help="input file")
     parser.add_argument("-m",default=False, action="store_true")
+    parser.add_argument("-g",default=False, action="store_true")
     args=parser.parse_args()
     if args.dir!=None and os.path.isdir(args.dir) and args.videoOut!=None:
         if not os.path.isdir(args.videoOut):
             os.mkdir(args.videoOut)
         wrapper=Wrapper("",modello[0],modello[1],args.videoOut,args.m)
+        wrapper.init_net(args.g)
         for filename in os.listdir(args.dir):
             f = os.path.join(args.dir,filename)
             print("Currently doing {}".format(f))
@@ -29,6 +31,7 @@ def main():
         if out!=None:
             out=out+".jpg"
         wrapper=Wrapper(args.videoIn,modello[0],modello[1],out,args.m)
+        wrapper.init_net(args.g)
         wrapper.run_simulation()
 
 

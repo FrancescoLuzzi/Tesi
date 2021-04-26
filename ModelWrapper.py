@@ -37,17 +37,23 @@ class Wrapper():
         self.POSE_PAIRS= [[0,1], [1,2], [2,3], [3,4], [1,5],
             [5,6], [6,7], [1,14], [14,8], [8,9], 
             [9,10], [14,11], [11,12], [12,13]]
-        self.net=cv.dnn.readNetFromCaffe(self.proto_path,self.model_path)
-        self.net.setPreferableBackend(cv.dnn.DNN_BACKEND_CUDA)
-        self.net.setPreferableTarget(cv.dnn.DNN_TARGET_CUDA)
         """
         #this is for computing resizes with gpu
         self.gpu_frame_paf_a=cv.cuda_GpuMat()
         self.gpu_frame_paf_b=cv.cuda_GpuMat()
-        self.gpu_frame_prob_map=cv.cuda_GpuMat()"""
+        self.gpu_frame_prob_map=cv.cuda_GpuMat()
+        """
+    
     """
     get all keypoints present in the image from the probability map
     """
+    def init_net(self,gpu):
+        self.net=cv.dnn.readNetFromCaffe(self.proto_path,self.model_path)
+        if gpu:
+            print("gpu Activated")
+            self.net.setPreferableBackend(cv.dnn.DNN_BACKEND_CUDA)
+            self.net.setPreferableTarget(cv.dnn.DNN_TARGET_CUDA)
+
     def get_keypoints(self,prob_map):
         map_smooth = cv.GaussianBlur(prob_map,(3,3),sigmaX=0,sigmaY=0)
         map_mask = np.uint8(map_smooth>self.threshold)
@@ -235,8 +241,8 @@ class Wrapper():
                     continue
                 B = np.int32(self.keypoints_list[index.astype(int), 0])
                 A = np.int32(self.keypoints_list[index.astype(int), 1])
-                cv.circle(frame, (B[0], A[0]), 4, self.colors[i], -1, cv.LINE_AA)
-                cv.circle(frame, (B[1], A[1]), 4, self.colors[i], -1, cv.LINE_AA)
+                cv.circle(frame, (B[0], A[0]), 4, self.colors[i], -1, cv.FILLED)
+                cv.circle(frame, (B[1], A[1]), 4, self.colors[i], -1, cv.FILLED)
                 cv.line(frame, (B[0], A[0]), (B[1], A[1]), self.colors[i], 3, cv.LINE_AA)
 
         #For each person i get the neck,head pair then find the distance between them and
