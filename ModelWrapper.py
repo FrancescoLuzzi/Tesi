@@ -50,7 +50,7 @@ class Wrapper():
     def init_net(self,gpu):
         self.net=cv.dnn.readNetFromCaffe(self.proto_path,self.model_path)
         if gpu:
-            print("gpu Activated")
+            print("gpu Accelerated")
             self.net.setPreferableBackend(cv.dnn.DNN_BACKEND_CUDA)
             self.net.setPreferableTarget(cv.dnn.DNN_TARGET_CUDA)
 
@@ -283,7 +283,7 @@ class Wrapper():
             x = int((self.frame_width * point[0]) / W)
             y = int((self.frame_height * point[1]) / H)
             
-            if prob > self.threshold :
+            if prob > self.threshold:
                 points.append((x, y))
                 #print(f"{self.keypoints_mapping[i]} detected point: [{x},{y}]")
                 cv.circle(frame, (x,y), 3, self.colors[i], thickness=-1, lineType=cv.FILLED)

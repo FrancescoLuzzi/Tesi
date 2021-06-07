@@ -8,10 +8,11 @@ def main():
     parser = argparse.ArgumentParser(description='Process images')
     parser.add_argument("--videoIn","-i",type=str, default="0" ,help="input file")
     parser.add_argument("--videoOut","-o",type=str,help="file di output opzionale, nel caso si abbia dato una directory con -d sarà la directory di arrivo")
-    parser.add_argument("--dir","-d",type=str ,help="input file")
-    parser.add_argument("-m",default=False, action="store_true")
-    parser.add_argument("-g",default=False, action="store_true")
+    parser.add_argument("--dir","-d",type=str ,help="directory source")
+    parser.add_argument("-m",default=False, action="store_true",help="persone multiple")
+    parser.add_argument("-g",default=False, action="store_true",help="usa gpu")
     args=parser.parse_args()
+
     if args.dir!=None and os.path.isdir(args.dir) and args.videoOut!=None:
         if not os.path.isdir(args.videoOut):
             os.mkdir(args.videoOut)
