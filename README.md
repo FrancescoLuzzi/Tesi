@@ -1,5 +1,9 @@
 # Tesi
 
+
+* [Base progetto](https://learnopencv.com/multi-person-pose-estimation-in-opencv-using-openpose/)
+
+
 ![Python version](https://img.shields.io/badge/python-python%203.8-brightgreen)
 
 The **tags** to launch this program are:
@@ -15,5 +19,6 @@ The **tags** to launch this program are:
 [OpenPose's README.md](https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/master/README.md).
 
 ## Prerequisites
-* opencv-python 4.5.1 compiled with CUDA11 and cudnn 8.5 [Link](https://www.youtube.com/watch?v=YsmhKar8oOc)
+* opencv-python 4.5.1 compiled with CUDA11 and cudnn 8.5 [Link tutorial to install](https://www.youtube.com/watch?v=YsmhKar8oOc)
 * numpy
+
