@@ -1,0 +1,14 @@
+**/image_left
+**/image_right
+**/OUTimage_left
+**/OUTimage_right
+**/video.mp4
+**/__pycache__
+**/*.jpg
+**/mpi/pose_deploy_linevec.prototxt
+**/mpi/pose_deploy_linevec_faster_4_stages.prototxt
+**/mpi/pose_iter_160000.caffemodel
+**/Presentazione.pptx
+**/*.jpeg
+**/*.png
+**/*.txt

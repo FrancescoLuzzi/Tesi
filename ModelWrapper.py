@@ -21,8 +21,8 @@ class Wrapper():
         self.oldpars = []
         # threshold to detect the keypoint
 
-        # if threshold==0.45 in image_left/000586 bin keypoints are not detected
-        self.threshold = 0.12
+        # if threshold==0.33 in image_left/000586 bin keypoints are not detected
+        self.threshold = 0.10
         # number of points on PAF
         self.n_interp_samples = 10
         # threshold for paf score
@@ -35,6 +35,7 @@ class Wrapper():
                        [0, 0, 255], [255, 0, 0], [0, 0, 128]]
         self.keypoints_mapping = ['Head', 'Neck', 'R-Sho', 'R-Elb', 'R-Wr', 'L-Sho',
                                   'L-Elb', 'L-Wr', 'R-Hip', 'R-Knee', 'R-Ank', 'L-Hip', 'L-Knee', 'L-Ank', 'Chest']
+        # number of points detected 15 for MPI
         self.n_points = 15
         self.map_idx = [[16, 17], [18, 19], [20, 21], [22, 23], [24, 25],
                         [26, 27], [28, 29], [30, 31], [
@@ -62,6 +63,10 @@ class Wrapper():
             self.net.setPreferableTarget(cv.dnn.DNN_TARGET_CUDA)
 
     def get_keypoints(self, prob_map):
+        #f = open("probMaps.txt", "a")
+        #np.savetxt(f, prob_map, fmt="%.2f")
+        # f.close()
+
         map_smooth = cv.GaussianBlur(prob_map, (3, 3), sigmaX=0, sigmaY=0)
         map_mask = np.uint8(map_smooth > self.threshold)
         keypoints = []
