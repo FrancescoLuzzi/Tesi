@@ -64,6 +64,7 @@ class Wrapper():
 
     def get_keypoints(self, prob_map):
         #f = open("probMaps.txt", "a")
+        # f.write("#########")
         #np.savetxt(f, prob_map, fmt="%.2f")
         # f.close()
 
