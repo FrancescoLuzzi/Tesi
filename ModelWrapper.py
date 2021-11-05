@@ -9,7 +9,9 @@ class Wrapper:
     Questa classe sara il wrapper e l'utilizzatore del modello MPI di OpenPose
     """
 
-    def __init__(self, file_path, model_path, proto_path, output_path, multiple):
+    def __init__(
+        self, file_path, model_path, proto_path, output_path, multiple, obscure
+    ):
         if file_path != "0" and os.path.isfile(file_path):
             self.file_path = file_path
         else:
@@ -19,11 +21,12 @@ class Wrapper:
         self.model_path = model_path
         self.proto_path = proto_path
         self.oldpars = []
+        self.obscure = obscure
         # threshold to detect the keypoint
 
         # if threshold==0.33 in image_left/000586 bin keypoints are not detected
-        self.threshold = 0.10
-        # self.threshold = 0.33
+        #self.threshold = 0.10
+        self.threshold = 0.301042
         # number of points on PAF
         self.n_interp_samples = 10
         # threshold for paf score
@@ -98,12 +101,6 @@ class Wrapper:
             [11, 12],
             [12, 13],
         ]
-        """
-        #this is for computing resizes with gpu
-        self.gpu_frame_paf_a=cv.cuda_GpuMat()
-        self.gpu_frame_paf_b=cv.cuda_GpuMat()
-        self.gpu_frame_prob_map=cv.cuda_GpuMat()
-        """
 
     """
     get all keypoints present in the image from the probability map
@@ -136,7 +133,7 @@ class Wrapper:
             masked_prob_map = map_smooth * blob_mask
             _, _, _, max_loc = cv.minMaxLoc(masked_prob_map)
             # this is a tuple formed by point_x, point_y, probability of that point
-            # to containt a valid keypoint
+            # to contain a valid keypoint
             keypoints.append(max_loc + (prob_map[max_loc[1], max_loc[0]],))
         return keypoints
 
@@ -153,14 +150,6 @@ class Wrapper:
             # A->B constitute a limb
             paf_a = output[0, self.map_idx[k][0], :, :]
             paf_b = output[0, self.map_idx[k][1], :, :]
-            """
-            #this is for computing resizes with gpu
-            self.gpu_frame_paf_a.upload(paf_a)
-            self.gpu_frame_paf_b.upload(paf_b)
-            self.gpu_frame_paf_a = cv.cuda.resize(self.gpu_frame_paf_a, (self.frame_width, self.frame_height))
-            self.gpu_frame_paf_b = cv.cuda.resize(self.gpu_frame_paf_b, (self.frame_width, self.frame_height))
-            paf_b = self.gpu_frame_paf_b.download()
-            paf_a=self.gpu_frame_paf_a.download()"""
             paf_a = cv.resize(paf_a, (self.frame_width, self.frame_height))
             paf_b = cv.resize(paf_b, (self.frame_width, self.frame_height))
             # Find the keypoints for the first and second limb
@@ -173,9 +162,9 @@ class Wrapper:
 
             # If keypoints for the joint-pair is detected
             # check every joint in cand_a with every joint in cand_b
-            # Calculate the distance vector between the two joints
+            # Calculate the unitary direction vector between the two joints
             # Find the PAF values at a set of interpolated points between the joints
-            # Use the above formula to compute a score to mark the connection valid
+            # Dot product between the direction vector and the PAF values to find the value of certainty of that connection
 
             if n_a != 0 and n_b != 0:
                 valid_pair = np.zeros((0, 3))
@@ -188,11 +177,12 @@ class Wrapper:
                         # Find d_ij
                         d_ij = np.subtract(cand_b[j][:2], cand_a[i][:2])
                         norm = np.linalg.norm(d_ij)
+
                         if norm:
                             d_ij = d_ij / norm
                         else:
                             continue
-                        # Create an array of 10 interpolated points on the line joining the two keypoints.
+                        # Create an array of n_interp_samples interpolated points on the line joining the two keypoints.
                         interp_coord = list(
                             zip(
                                 np.linspace(
@@ -207,6 +197,7 @@ class Wrapper:
                                 ),
                             )
                         )
+                        # Create an array of n_interp_samples probability values of the PAFs in the position of the points that we got beefore.
                         paf_interp = []
                         for k in range(self.n_interp_samples):
                             paf_interp.append(
@@ -221,12 +212,13 @@ class Wrapper:
                                     ],
                                 ]
                             )
-                        # Find avg_PAF_score as the midpoint of all the PAF_scores
+                        # Check the PAF score of each pair of points, doing the dot product between the PAF and the unit vector giving the direction of the connection
                         paf_scores = np.dot(paf_interp, d_ij)
+                        # Find avg_PAF_score
                         avg_paf_score = sum(paf_scores) / len(paf_scores)
 
                         # Check if the connection is valid
-                        # If the fraction of interpolated vectors aligned with PAF is higher then threshold -> Valid Pair
+                        # If the fraction of interpolated vectors that has at least paf_score_th, is higher then threshold -> Valid Pair
                         if (
                             len(np.where(paf_scores > self.paf_score_th)[0])
                             / self.n_interp_samples
@@ -274,14 +266,14 @@ class Wrapper:
                             person_idx = j
                             found = 1
                             break
-                    # if the part_A is found (Start of the connection) then add part_B to the person
+                    # if the part_A is found on a person (Start of the connection) then add part_B to that person
                     if found == 1:
                         personwise_keypoints[person_idx][index_b] = part_Bs[i]
                         personwise_keypoints[person_idx][-1] += (
                             self.keypoints_list[part_Bs[i].astype(int), 2]
                             + valid_pairs[k][i][2]
                         )
-                    # if find no partA in the person keypoints, add one person
+                    # if find no partA in any person keypoints, add one person
                     elif not found and k < (self.n_points - 1):
                         row = -1 * np.ones((self.n_points + 1))
                         row[index_a] = part_As[i]
@@ -326,11 +318,6 @@ class Wrapper:
 
         for part in range(self.n_points):
             prob_map = output[0, part, :, :]
-            """
-            #this is for computing resizes with gpu
-            self.gpu_frame_prob_map.upload(prob_map)
-            self.gpu_frame_prob_map = cv.cuda.resize(self.gpu_frame_prob_map, (frame.shape[1], frame.shape[0]))
-            prob_map=self.gpu_frame_prob_map.download()"""
             prob_map = cv.resize(prob_map, (frame.shape[1], frame.shape[0]))
             keypoints = self.get_keypoints(prob_map)
             # print("Keypoints - {} : {}".format(self.keypoints_mapping[part], keypoints))
@@ -353,7 +340,9 @@ class Wrapper:
                 index = personwise_keypoints[n][np.array(self.POSE_PAIRS[i])]
                 if -1 in index:
                     continue
+                # HEAD
                 B = np.int32(self.keypoints_list[index.astype(int), 0])
+                # CHEST
                 A = np.int32(self.keypoints_list[index.astype(int), 1])
                 cv.circle(frame, (B[0], A[0]), 4, self.colors[i], -1, cv.FILLED)
                 cv.circle(frame, (B[1], A[1]), 4, self.colors[i], -1, cv.FILLED)
@@ -363,16 +352,26 @@ class Wrapper:
 
         # For each person i get the neck,head pair then find the distance between them and
         # the midpoint which will be the center of the circle that covers the face
-        """for n in range(len(personwise_keypoints)): 
-            index = personwise_keypoints[n][np.array(self.POSE_PAIRS[0])]
-            if -1 in index:
-                continue
-            B = np.int32(self.keypoints_list[index.astype(int), 0])
-            A = np.int32(self.keypoints_list[index.astype(int), 1])
-            median_x=int(np.absolute(B[0]-B[1])/2+min([B[0],B[1]]))
-            median_y=int(np.absolute(A[0]-A[1])/2+min([A[0],A[1]]))
-            radius=int(np.sqrt(np.power(B[0]-B[1],2)+np.power(A[0]-A[1],2))*0.6)
-            cv.circle(frame, (median_x, median_y), radius, (0, 0, 0), thickness=-1, lineType=cv.FILLED)"""
+        if self.obscure:
+            for n in range(len(personwise_keypoints)):
+                index = personwise_keypoints[n][np.array(self.POSE_PAIRS[0])]
+                if -1 in index:
+                    continue
+                B = np.int32(self.keypoints_list[index.astype(int), 0])
+                A = np.int32(self.keypoints_list[index.astype(int), 1])
+                median_x = int(np.absolute(B[0] - B[1]) / 2 + min([B[0], B[1]]))
+                median_y = int(np.absolute(A[0] - A[1]) / 2 + min([A[0], A[1]]))
+                radius = int(
+                    np.sqrt(np.power(B[0] - B[1], 2) + np.power(A[0] - A[1], 2)) * 0.6
+                )
+                cv.circle(
+                    frame,
+                    (median_x, median_y),
+                    radius,
+                    (0, 0, 0),
+                    thickness=-1,
+                    lineType=cv.FILLED,
+                )
         return frame
 
     """
@@ -396,7 +395,7 @@ class Wrapper:
         points = []
 
         for i in range(
-            15
+            self.n_points
         ):  # I want only right shoulder(2), neck(1) and head(0) keypoints
 
             # confidence map of corresponding body's part.
@@ -423,17 +422,32 @@ class Wrapper:
         for x in range(self.n_points - 1):
             par1, par2 = self.POSE_PAIRS[x]
             cv.line(frame, points[par1], points[par2], self.colors[x], 3, cv.LINE_AA)
-        """if points[0]!=None and points[1]!=None:
-            head_x,head_y=points[0]
-            neck_x,neck_y=points[1]
-            median_x=int((head_x+neck_x)/2)
-            median_y=int((head_y+neck_y)/2)
-            radius=int(abs(head_y-neck_y)*0.6)
-            self.oldpars=[median_x,median_y,radius]
-            cv.circle(frame, (median_x, median_y), radius, (0, 0, 0), thickness=-1, lineType=cv.FILLED)
-        elif len(self.oldpars)!=0:
-            cv.circle(frame, (self.oldpars[0], self.oldpars[1]), self.oldpars[2], (0, 0, 0), thickness=-1, lineType=cv.FILLED)
-        """
+        if self.obscure:
+            if points[0] != None and points[1] != None:
+                head_x, head_y = points[0]
+                neck_x, neck_y = points[1]
+                median_x = int((head_x + neck_x) / 2)
+                median_y = int((head_y + neck_y) / 2)
+                radius = int(abs(head_y - neck_y) * 0.6)
+                self.oldpars = [median_x, median_y, radius]
+                cv.circle(
+                    frame,
+                    (median_x, median_y),
+                    radius,
+                    (0, 0, 0),
+                    thickness=-1,
+                    lineType=cv.FILLED,
+                )
+            elif len(self.oldpars) != 0:
+                cv.circle(
+                    frame,
+                    (self.oldpars[0], self.oldpars[1]),
+                    self.oldpars[2],
+                    (0, 0, 0),
+                    thickness=-1,
+                    lineType=cv.FILLED,
+                )
+
         return frame
 
     """
