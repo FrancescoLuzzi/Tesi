@@ -13,3 +13,4 @@
 **/*.png
 **/*.txt
 **/anaconda.bat
+!**/Passi da fare.txt
