@@ -69,7 +69,7 @@ class Wrapper:
         ]
         # number of points detected 15 for MPI
         self.n_points = 15
-        self.map_idx = [
+        self.paf_idx = [
             [16, 17],
             [18, 19],
             [20, 21],
@@ -147,10 +147,16 @@ class Wrapper:
         invalid_pairs = []
         # loop for every POSE_PAIR
         for k in range(self.n_points - 1):
+<<<<<<< HEAD
             # A->B constitute a limb this the axis inverted
             #to get a point paf value paf[point_y,point_x]
             paf_a = output[0, self.map_idx[k][0], :, :]
             paf_b = output[0, self.map_idx[k][1], :, :]
+=======
+            # A->B constitute a limb
+            paf_a = output[0, self.paf_idx[k][0], :, :]
+            paf_b = output[0, self.paf_idx[k][1], :, :]
+>>>>>>> ea8d2aecf3d3e736c632af3c2d7f44f2ff7aedd5
             paf_a = cv.resize(paf_a, (self.frame_width, self.frame_height))
             paf_b = cv.resize(paf_b, (self.frame_width, self.frame_height))
             # Find the keypoints for the first and second limb
