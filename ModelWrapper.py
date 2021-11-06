@@ -147,7 +147,8 @@ class Wrapper:
         invalid_pairs = []
         # loop for every POSE_PAIR
         for k in range(self.n_points - 1):
-            # A->B constitute a limb
+            # A->B constitute a limb this the axis inverted
+            #to get a point paf value paf[point_y,point_x]
             paf_a = output[0, self.map_idx[k][0], :, :]
             paf_b = output[0, self.map_idx[k][1], :, :]
             paf_a = cv.resize(paf_a, (self.frame_width, self.frame_height))
