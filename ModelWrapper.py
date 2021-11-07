@@ -3,7 +3,6 @@ import cv2 as cv
 import os
 import time
 
-
 class Wrapper:
     r"""
     Questa classe sara il wrapper e l'utilizzatore del modello MPI di OpenPose
@@ -153,6 +152,13 @@ class Wrapper:
             paf_b = output[0, self.paf_idx[k][1], :, :]
             paf_a = cv.resize(paf_a, (self.frame_width, self.frame_height))
             paf_b = cv.resize(paf_b, (self.frame_width, self.frame_height))
+            """ 
+            SERVE A MOSTRARE LA HEAT MAP
+            heatmapshow = None
+            heatmapshow = cv.normalize(paf_b, heatmapshow, alpha=0, beta=255, norm_type=cv.NORM_MINMAX, dtype=cv.CV_8U)
+            heatmapshow = cv.applyColorMap(heatmapshow, cv.COLORMAP_HOT)
+            cv.imshow("Heatmap", cv.addWeighted(heatmapshow, 0.3, self.frame, 0.7, 0))
+            cv.waitKey(0) """
             # Find the keypoints for the first and second limb
             # all keypoints for the POSE_PAIR[k][0] keypoint (0=Head,...)
             cand_a = self.detected_keypoints[self.POSE_PAIRS[k][0]]
@@ -487,6 +493,7 @@ class Wrapper:
         while cap.isOpened():
             # Capture frame-by-frame
             ret, frame = cap.read()
+            #self.frame=frame
             if ret == True:
                 start_time = time.time()
                 frame = get_frame(frame)
