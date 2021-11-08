@@ -7,17 +7,18 @@ Il numero è il capitolo della tesi:
                              COME HO AFFRONTATO IL PROBLEMA step by step iniziando dagli strumenti)
 2) migliorare l'intro agli strumenti e controllare l'italiano di questi
 3)SUDDIVISO IN SOTTOCAPITOLI
-    3) Spiegazione migliorata delle variabili
+    3) Spiegazione migliorata delle variabili (IS OK)
     3.1)IS OK
-    3.2)1-Aggiungi immagine 3D relazione immagine e probabilità per i keypoints 2-Cancella commenti nel codice per poi fare un elenco puntato dopo il codice stesso con i relativi commenti esplicati (identificati da un numero)
+    3.2)    1-Aggiungi immagine 3D relazione immagine e probabilità per i keypoints (WORK IN PROGRESS) 
+            2-Cancella commenti nel codice per poi fare un elenco puntato dopo il codice stesso con i relativi commenti esplicati (identificati da un numero) (WORK IN PROGRESS)
     3.3)IS OK
     3.4)IS OK
-    3.5)Spiegare gli output finali e l'incremento delle prestazioni (10% di FPS)
+    3.5)Spiegare gli output finali e l'incremento delle prestazioni
 4) allungare conclusione (vantaggi/svantaggi + migliorie, eventuali usi ed applicazioni[ES. pulizia frame per NN autopilota {Tesla, comma.ai}, google MAPS, videoreport giornalistici TIPO MANIFESTAZIONI],
                           spiegazione scelta OpenPose rispetto ad altri approcci/NN)
 
 
-IMPORTANTISSIMO CONTROLLARE ITALIANO CON CATIA!
+IMPORTANTISSIMO CONTROLLARE ITALIANO!
 
 
 POWER POINT con punti principali dell'applicazione, formato immagine, logica e conclusione
