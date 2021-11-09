@@ -1,7 +1,7 @@
 **/image_left
 **/image_right
-**/OUTimage_left
-**/OUTimage_right
+**/OUTimage_left*
+**/OUTimage_right*
 **/video.mp4
 **/__pycache__
 **/*.jpg

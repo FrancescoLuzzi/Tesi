@@ -8,7 +8,7 @@ Il numero è il capitolo della tesi:
 2) migliorare l'intro agli strumenti e controllare l'italiano di questi
 3)SUDDIVISO IN SOTTOCAPITOLI
     3) Spiegazione migliorata delle variabili (IS OK)
-    3.1)IS OK
+    3.1)IS OK (Aggiungere una decina di foto sia in INPUT che in OUTPUT date dal prof)
     3.2)    1-Aggiungi immagine 3D relazione immagine e probabilità per i keypoints (WORK IN PROGRESS) 
             2-Cancella commenti nel codice per poi fare un elenco puntato dopo il codice stesso con i relativi commenti esplicati (identificati da un numero) (WORK IN PROGRESS)
     3.3)IS OK
