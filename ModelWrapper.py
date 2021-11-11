@@ -23,9 +23,12 @@ class Wrapper:
         self.obscure = obscure
         # threshold to detect the keypoint
 
-        # if threshold==0.33 in image_left/000586 bin keypoints are not detected
         #self.threshold = 0.10
-        self.threshold = 0.301042
+        # if threshold==0.301042 in image_left/000586 bin keypoints are not detected
+        #self.threshold = 0.301042
+        # if threshold==0.186737 in image_left/000265 head keypoint correctly detected
+        self.threshold = 0.186737
+        
         # number of points on PAF
         self.n_interp_samples = 10
         # threshold for paf score
