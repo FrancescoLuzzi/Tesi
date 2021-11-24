@@ -7,12 +7,12 @@
 ![Python version](https://img.shields.io/badge/python-python%203.8-brightgreen)
 
 The **tags** to launch this program are:
-* **-i** to give a relative or absolute path to an immage, if omitted default to the camera;
-* **-o** to give the path to output an immage, if omitted an immage will pop up;
+* **-i** to give a relative or absolute path to an image, if omitted default to the camera;
+* **-o** to give the path to output an image, if omitted an image will pop up;
 * **-m** to detect multiple people, if omitted default to single detection.
 * **-g** to use gpu accelerated flow with OpenCv compiled with CUDA support
-* **-d** select a directory to process (mutually exclusive with -i), -o behaviour changes to name the output directory (requested)
-* **-d** cover faces detected
+* **-d** select a directory to process (mutually exclusive with -i), -o behaviour changes to the output directory's name (requested)
+* **-p** cover detected faces
 
 
 [OpenPose's License](https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/master/LICENSE).
