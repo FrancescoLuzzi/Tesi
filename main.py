@@ -15,7 +15,7 @@ def main():
         "--videoOut",
         "-o",
         type=str,
-        help="file di output opzionale, nel caso si abbia dato una directory con -d sarà la directory di arrivo",
+        help="file di output opzionale, nel caso si abbia dato una directory con -d sarà la directory di output",
     )
     parser.add_argument("--dir", "-d", type=str, help="directory source")
     parser.add_argument(
@@ -44,7 +44,7 @@ def main():
                 wrapper.run_simulation()
     else:
         out = args.videoOut
-        if out != None:
+        if out != None and (".jpg" not in out or ".jpeg" not in out):
             out = out + ".jpg"
         wrapper = Wrapper(args.videoIn, modello[0], modello[1], out, args.m, args.p)
         wrapper.init_net(args.g)

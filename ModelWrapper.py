@@ -104,9 +104,7 @@ class Wrapper:
             [12, 13],
         ]
 
-    """
-    get all keypoints present in the image from the probability map
-    """
+    """ Init the neural network with CUDA support """
 
     def init_net(self, gpu):
         self.net = cv.dnn.readNetFromCaffe(self.proto_path, self.model_path)
@@ -115,11 +113,16 @@ class Wrapper:
             self.net.setPreferableBackend(cv.dnn.DNN_BACKEND_CUDA)
             self.net.setPreferableTarget(cv.dnn.DNN_TARGET_CUDA)
 
+    """
+    get all keypoints present in the image from the probability map
+    """
     def get_keypoints(self, prob_map):
-        # f = open("probMaps.txt", "a")
-        # f.write("#########")
-        # np.savetxt(f, prob_map, fmt="%.2f")
-        # f.close()
+
+        """this code snippet estrapolates the prob_maps to a file
+        f = open("probMaps.txt", "a")
+        f.write("#########")
+        np.savetxt(f, prob_map, fmt="%.2f")
+        f.close() """
 
         map_smooth = cv.GaussianBlur(prob_map, (3, 3), sigmaX=0, sigmaY=0)
         map_mask = np.uint8(map_smooth > self.threshold)
@@ -156,7 +159,7 @@ class Wrapper:
             paf_a = cv.resize(paf_a, (self.frame_width, self.frame_height))
             paf_b = cv.resize(paf_b, (self.frame_width, self.frame_height))
             """ 
-            SERVE A MOSTRARE LA HEAT MAP
+            This code snippet shows the heatmaps of the pafs, just change paf_a and paf_b accordingly
             heatmapshow = None
             heatmapshow = cv.normalize(paf_b, heatmapshow, alpha=0, beta=255, norm_type=cv.NORM_MINMAX, dtype=cv.CV_8U)
             heatmapshow = cv.applyColorMap(heatmapshow, cv.COLORMAP_HOT)
