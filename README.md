@@ -24,7 +24,7 @@ The **tags** to launch this program are:
 * numpy
 
 
-##Support code
+## Support code
 
 probMapsRetreiver.py is used to parse the debug output of the probability map
 
