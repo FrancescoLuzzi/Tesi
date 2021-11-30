@@ -23,3 +23,10 @@ The **tags** to launch this program are:
 * opencv-python 4.5.1 compiled with CUDA11 and cudnn 8.5 [Link tutorial to install](https://www.youtube.com/watch?v=YsmhKar8oOc)
 * numpy
 
+
+##Support code
+
+probMapsRetreiver.py is used to parse the debug output of the probability map
+
+
+ProbMapPlotter.py also uses Matplotlib to display the different prob maps
