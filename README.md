@@ -1,7 +1,7 @@
 # Tesi
 
 
-* [Base progetto](https://learnopencv.com/multi-person-pose-estimation-in-opencv-using-openpose/)
+**[Basics of the project](https://learnopencv.com/multi-person-pose-estimation-in-opencv-using-openpose/)**
 
 
 The **tags** to launch this program are:
