@@ -21,7 +21,7 @@ The **tags** to launch this program are:
 
 
 ![Python version](https://img.shields.io/badge/python-python%203.8-brightgreen)
-* opencv-python 4.5.1 compiled with CUDA11 and cudnn 8.5 [Link tutorial to install](https://www.youtube.com/watch?v=YsmhKar8oOc)
+* opencv-python 4.5.1 compiled with CUDA11 and cudnn 8.5 [Tutorial to install it](https://www.youtube.com/watch?v=YsmhKar8oOc)
 * numpy
 
 
