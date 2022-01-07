@@ -3,6 +3,7 @@ import cv2 as cv
 import os
 import time
 
+
 class Wrapper:
     r"""
     Questa classe sara il wrapper e l'utilizzatore del modello MPI di OpenPose
@@ -23,12 +24,12 @@ class Wrapper:
         self.obscure = obscure
         # threshold to detect the keypoint
 
-        #self.threshold = 0.10
+        # self.threshold = 0.10
         # if threshold==0.301042 in image_left/000586 bin keypoints are not detected
-        #self.threshold = 0.301042
+        # self.threshold = 0.301042
         # if threshold==0.186737 in image_left/000265 head keypoint correctly detected
         self.threshold = 0.186737
-        
+
         # number of points on PAF
         self.n_interp_samples = 10
         # threshold for paf score
@@ -116,13 +117,14 @@ class Wrapper:
     """
     get all keypoints present in the image from the probability map
     """
+
     def get_keypoints(self, prob_map):
 
         """this code snippet estrapolates the prob_maps to a file
         f = open("probMaps.txt", "a")
         f.write("#########")
         np.savetxt(f, prob_map, fmt="%.2f")
-        f.close() """
+        f.close()"""
 
         map_smooth = cv.GaussianBlur(prob_map, (3, 3), sigmaX=0, sigmaY=0)
         map_mask = np.uint8(map_smooth > self.threshold)
@@ -153,7 +155,7 @@ class Wrapper:
         # loop for every POSE_PAIR
         for k in range(self.n_points - 1):
             # A->B constitute a limb this the axis inverted
-            #to get a point paf value paf[point_y,point_x]
+            # to get a point paf value paf[point_y,point_x]
             paf_a = output[0, self.paf_idx[k][0], :, :]
             paf_b = output[0, self.paf_idx[k][1], :, :]
             paf_a = cv.resize(paf_a, (self.frame_width, self.frame_height))
@@ -499,7 +501,7 @@ class Wrapper:
         while cap.isOpened():
             # Capture frame-by-frame
             ret, frame = cap.read()
-            #self.frame=frame
+            # self.frame=frame
             if ret == True:
                 start_time = time.time()
                 frame = get_frame(frame)
