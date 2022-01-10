@@ -1,7 +1,7 @@
 import argparse
 from components.Exceptions import FileException
 
-from components.models import model_factory
+import components.models
 from components.runner import run_simulation_to_file, run_simulation_to_monitor
 import components.writer
 import components.painter
@@ -118,7 +118,7 @@ def main():
     args = parser.parse_args()
 
     # get Requested Model
-    model = model_factory(args.m, args.g, modello[0], modello[1])
+    model = components.models.model_factory(args.m, args.g, modello[0], modello[1])
     model.init_net()
 
     # get Requested Painter
