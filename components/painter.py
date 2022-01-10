@@ -67,7 +67,7 @@ class PrivatePainter(SimplePainter):
 def painter_factory(private: bool):
     painter = None
     if private:
-        painter = SimplePainter()
-    else:
         painter = PrivatePainter()
+    else:
+        painter = SimplePainter()
     return painter
