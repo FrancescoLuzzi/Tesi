@@ -7,6 +7,7 @@ from numpy.core.multiarray import array
 
 __all__ = [
     "Writer",
+    "MonitorWriter",
     "WebCamMonitorWriter",
     "FileMonitorWriter",
     "FileWriter",
@@ -39,74 +40,48 @@ class Writer(ABC):
     def get_frame_props(self) -> tuple[int, int]:
         return self.frame_width, self.frame_height
 
-    def change_file(self, file_in: str, file_out: str) -> None:
-        """
-        The behaviour of this function is changed only by FileWriter and sub classes.
-        All other classes simply don't need this function.
-        """
-        raise components.Exceptions.WrongWriterException
-
-    def wait_key_image(self) -> bool:
-        raise components.Exceptions.WrongWriterException
-
-    def wait_key_video(self) -> bool:
-        raise components.Exceptions.WrongWriterException
-
     @abstractmethod
     def write(self, frame) -> None:
         pass
 
 
-class WebCamMonitorWriter(Writer):
+class MonitorWriter(Writer):
     window_name: str
 
     def __init__(self, window_name: str = "Output Image") -> None:
         self.window_name = window_name
         super().__init__()
 
+    def write(self, frame) -> None:
+        cv.imshow(self.window_name, frame)
+
+    def close(self) -> None:
+        super().close()
+        cv.destroyAllWindows()
+
+    def wait_key_image(self):
+        return cv.waitKey(0) & 0xFF == ord("q")
+
+    def wait_key_video(self):
+        return cv.waitKey(1) & 0xFF == ord("q")
+
+
+class WebCamMonitorWriter(MonitorWriter):
     def init_writer(self) -> None:
         self.cap = cv.VideoCapture(0)
         super().init_writer()
 
-    def write(self, frame) -> None:
-        cv.imshow(self.window_name, frame)
 
-    def close(self) -> None:
-        super().close()
-        cv.destroyAllWindows()
-
-    def wait_key_image(self):
-        return cv.waitKey(0) & 0xFF == ord("q")
-
-    def wait_key_video(self):
-        return cv.waitKey(1) & 0xFF == ord("q")
-
-
-class FileMonitorWriter(Writer):
-    window_name: str
+class FileMonitorWriter(MonitorWriter):
     file_in: str
 
     def __init__(self, file_in: str, window_name: str = "Output Image") -> None:
-        self.window_name = window_name
         self.file_in = file_in
-        super().__init__()
+        super().__init__(window_name)
 
     def init_writer(self) -> None:
         self.cap = cv.VideoCapture(self.file_in)
         super().init_writer()
-
-    def write(self, frame) -> None:
-        cv.imshow(self.window_name, frame)
-
-    def close(self) -> None:
-        super().close()
-        cv.destroyAllWindows()
-
-    def wait_key_image(self):
-        return cv.waitKey(0) & 0xFF == ord("q")
-
-    def wait_key_video(self):
-        return cv.waitKey(1) & 0xFF == ord("q")
 
 
 class FileWriter(Writer):
