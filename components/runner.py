@@ -1,9 +1,9 @@
 from components.models import Model
-from components.writer import Writer
+from components.writer import FileWriter, MonitorWriter
 from components.painter import Painter
 
 
-def run_simulation_to_file(model: Model, writer: Writer, painter: Painter) -> None:
+def run_simulation_to_file(model: Model, writer: FileWriter, painter: Painter) -> None:
     frame_width, frame_height = writer.get_frame_props()
     while writer.is_open():
         ret, frame = writer.read()
@@ -16,7 +16,7 @@ def run_simulation_to_file(model: Model, writer: Writer, painter: Painter) -> No
 
 
 def run_simulation_to_monitor(
-    model: Model, writer: Writer, painter: Painter, wait
+    model: Model, writer: MonitorWriter, painter: Painter, wait
 ) -> None:
     frame_width, frame_height = writer.get_frame_props()
     while writer.is_open():
