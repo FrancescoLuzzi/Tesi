@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 import cv2 as cv
 import components.Exceptions
-
+from typing import Tuple
 from numpy.core.multiarray import array
 
 __all__ = [
@@ -31,13 +31,13 @@ class Writer(ABC):
     def close(self) -> None:
         self.cap.release()
 
-    def read(self) -> tuple[bool, array]:
+    def read(self) -> Tuple[bool, array]:
         return self.cap.read()
 
     def is_open(self) -> bool:
         return self.cap.isOpened()
 
-    def get_frame_props(self) -> tuple[int, int]:
+    def get_frame_props(self) -> Tuple[int, int]:
         return self.frame_width, self.frame_height
 
     @abstractmethod

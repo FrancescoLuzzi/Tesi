@@ -1,3 +1,4 @@
+from typing import List, Dict
 import cv2 as cv
 from abc import ABC, abstractmethod
 from numpy import sqrt, absolute, power, min
@@ -8,11 +9,11 @@ __all__ = ["Painter", "PrivatePainter", "SimplePainter", "painter_factory"]
 
 class Painter(ABC):
     n_points: int
-    colors: list[list[int]]
-    pose_pairs: list[list[int]]
+    colors: List[List[int]]
+    pose_pairs: List[List[int]]
 
     @abstractmethod
-    def paint_frame(self, frame, detections: list[dict]) -> None:
+    def paint_frame(self, frame, detections: List[Dict]) -> None:
         pass
 
 
@@ -22,7 +23,7 @@ class SimplePainter(Painter):
         self.colors = colors
         self.pose_pairs = pose_pairs
 
-    def paint_frame(self, frame, detections: list[dict]) -> None:
+    def paint_frame(self, frame, detections: List[Dict]) -> None:
         for person in detections:
             keys = list(person.keys())
             cv.circle(frame, person[keys[0]], 4, self.colors[keys[0]], -1, cv.FILLED)
@@ -39,7 +40,7 @@ class SimplePainter(Painter):
 
 
 class PrivatePainter(SimplePainter):
-    def paint_frame(self, frame, detections: list[dict]) -> None:
+    def paint_frame(self, frame, detections: List[Dict]) -> None:
         super().paint_frame(frame, detections)
         for person in detections:
             keys = list(person.keys())

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, List
+from typing import Any, List, Dict, Tuple
 import numpy as np
 from numpy.typing import NDArray
 import cv2 as cv
@@ -48,7 +48,7 @@ class Model(ABC):
     n_points: int
     threshold: float
     n_points: int
-    pose_pairs: list[list[int]]
+    pose_pairs: List[List[int]]
     net: Any
 
     def __init__(self, model_path: str, proto_path: str) -> None:
@@ -77,7 +77,7 @@ class Model(ABC):
 
 class SingleDetectionModel(Model):
     @get_framerate
-    def find_detections(self, frame, frame_width: int, frame_height: int) -> list[dict]:
+    def find_detections(self, frame, frame_width: int, frame_height: int) -> List[Dict]:
         self.in_height = 368
         self.in_width = int((self.in_height / frame_height) * frame_width)
 
@@ -150,7 +150,7 @@ class MultipleDetectionsModel(Model):
     get all keypoints present in the image from the probability map
     """
 
-    def get_keypoints(self, prob_map) -> list[tuple[list[int], float]]:
+    def get_keypoints(self, prob_map) -> List[Tuple[List[int], float]]:
         map_smooth = cv.GaussianBlur(prob_map, (3, 3), sigmaX=0, sigmaY=0)
         map_mask = np.uint8(map_smooth > self.threshold)
         keypoints = []
@@ -250,7 +250,7 @@ class MultipleDetectionsModel(Model):
 
     def get_valid_pairs(
         self, model_detections, frame_width: int, frame_height: int
-    ) -> tuple[list[NDArray], list[int]]:
+    ) -> Tuple[List[NDArray], List[int]]:
         valid_pairs = []
         invalid_pairs = []
         # loop for every POSE_PAIR
@@ -286,7 +286,7 @@ class MultipleDetectionsModel(Model):
     Returns (indx,True) if found (-1,False) otherwhise
     """
 
-    def find_part(self, part_indx, personwise_keypoints, part) -> tuple[int, bool]:
+    def find_part(self, part_indx, personwise_keypoints, part) -> Tuple[int, bool]:
         for j in range(len(personwise_keypoints)):
             if personwise_keypoints[j][part_indx] == part:
                 return (j, True)
@@ -338,7 +338,7 @@ class MultipleDetectionsModel(Model):
         return personwise_keypoints
 
     @get_framerate
-    def find_detections(self, frame, frame_width: int, frame_height: int) -> list[dict]:
+    def find_detections(self, frame, frame_width: int, frame_height: int) -> List[Dict]:
         self.in_height = 368
         self.in_width = int((self.in_height / frame_height) * frame_width)
         # blob and forwrd to the network
