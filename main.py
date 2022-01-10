@@ -63,6 +63,7 @@ def file_run(
         _, ext = os.path.splitext(file_input)
         file_output, _ = os.path.splitext(file_output)
         file_output = file_output + ext
+        output_type = input_type
     if input_type != output_type:
         print("Estensione errata dell'output")
         exit(-1)
