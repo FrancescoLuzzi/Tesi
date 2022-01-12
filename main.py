@@ -1,7 +1,6 @@
 import argparse
 from components import models, painters, writers, colored_output
 from components.runners import dir_run, file_run, file_run_monitor, webcam_run_monitor
-import os
 
 modello = [
     ".\\mpi\\pose_iter_160000.caffemodel",
@@ -16,17 +15,26 @@ def main():
         "--videoOut",
         "-o",
         type=str,
-        help="file di output opzionale, nel caso si abbia dato una directory con -d sarà la directory di output",
+        help="optional output file path, in case you have given a directory with -d it will be the output directory",
     )
     parser.add_argument("--dir", "-d", type=str, help="directory source")
     parser.add_argument(
-        "-m", default=False, action="store_true", help="persone multiple"
+        "-m",
+        default=False,
+        action="store_true",
+        help="multiple people detection, default to single detection",
     )
     parser.add_argument(
-        "-g", default=False, action="store_true", help="usa accelerazione gpu"
+        "-g",
+        default=False,
+        action="store_true",
+        help="use GPU acceleration, default CPU only",
     )
     parser.add_argument(
-        "-p", default=False, action="store_true", help="oscuramento volti"
+        "-p",
+        default=False,
+        action="store_true",
+        help="private mode: cover all detected faces",
     )
 
     args = parser.parse_args()
