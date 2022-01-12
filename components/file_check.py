@@ -1,4 +1,4 @@
-import os
+from os.path import splitext
 
 
 def check_file_type(file_name: str) -> str:
@@ -22,7 +22,7 @@ def check_file_type(file_name: str) -> str:
         ".heif",
     )
     vid_fm = (".flv", ".avi", ".mp4", ".3gp", ".mov", ".webm", ".ogg", ".qt", ".avchd")
-    _, ext = os.path.splitext(file_name)
+    _, ext = splitext(file_name)
     if ext in img_fm:
         return "image"
     elif ext in vid_fm:
