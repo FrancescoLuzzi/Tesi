@@ -70,26 +70,13 @@ read_file(f"{filename}.txt")
 Z.reverse()
 Z = np.array(Z)
 Z = Z.transpose()
+X.reverse()
 fig = plt.figure()
 ax = plt.axes(projection="3d")
-
-# Read the image with Opencv
-img = cv2.imread("./group.jpg")
-# Change the color from BGR to RGB
-img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
 width = int(440 / resize)
 height = int(640 / resize)
 dim = (width, height)
 
-# resize image
-img = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
-
-# Orgird to store data
-x, y = np.ogrid[0 : img.shape[0], 0 : img.shape[1]]
-# In Python3 matplotlib assumes rgbdata in range 0.0 to 1.0
-img = img.astype("float32") / 255
-ax.plot_surface(x, y, np.atleast_2d(0), rstride=3, cstride=3, facecolors=img)
-X.reverse()
 ax.plot_wireframe(X, Y, np.array([Z, Z]), rstride=100, cstride=100)
 plt.show()
