@@ -29,9 +29,6 @@ resize = 8
 
 
 def read_file(filename):
-    if not path.isfile(filename):
-        print("You need to run probMapsRetreiver.py")
-        exit(-1)
     x = 0
     y = 0
     f = open(filename, "r")
@@ -63,7 +60,11 @@ while resp == None:
         print("valore non giusto")
     else:
         resp = int(i)
-read_file(f"{basename}{keypoints_mapping[resp-1]}.txt")
+filename = f"{basename}{keypoints_mapping[resp-1]}"
+if not path.isfile(filename):
+    print("You need to run probMapsRetreiver.py")
+    exit(-1)
+read_file(f"{filename}.txt")
 Z.reverse()
 Z = np.array(Z)
 Z = Z.transpose()
