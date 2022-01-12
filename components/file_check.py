@@ -3,6 +3,8 @@ import os
 
 
 def check_file_type(file_name: str) -> str:
+    """Check if file_name's extension is compatible with images of videos.\n
+    If both are false FileTypeException is raised"""
     img_fm = (
         ".tif",
         ".tiff",
