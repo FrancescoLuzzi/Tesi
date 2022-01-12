@@ -1,3 +1,8 @@
+from os import path
+
+if not path.isfile("./probMaps.txt"):
+    print("You need to get the prob map first")
+    exit(-1)
 f = open("./probMaps.txt", "r")
 keypoints_mapping = [
     "Head",

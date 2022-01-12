@@ -166,6 +166,8 @@ class MultipleDetectionsModel(Model):
         map_mask = np.uint8(map_smooth > self.threshold)
         keypoints = []
 
+        # to retrive the prob_maps for probMapsRetreiver.py extrapolate_prob_map(prob_map)
+
         # find the contours where the keypoints migth be
         contours, _ = cv.findContours(map_mask, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
 
@@ -270,6 +272,9 @@ class MultipleDetectionsModel(Model):
             paf_b = model_detections[0, self.paf_idx[k][1], :, :]
             paf_a = cv.resize(paf_a, (frame_width, frame_height))
             paf_b = cv.resize(paf_b, (frame_width, frame_height))
+
+            # to show the heatmaps run: show_heatmap(paf_a,frame), show_heatmap(paf_b,frame)
+            # YOU NEED TO PASS THE FRAME AS AN ARGUMENT IN find_detections
 
             # Find the keypoints for the first and second limb
             # all keypoints for the POSE_PAIR[k][0] keypoint (0=Head,...)

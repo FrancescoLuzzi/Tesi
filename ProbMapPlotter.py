@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
 import numpy as np
 import cv2
+from os import path
 
 X = []
 Y = []
@@ -28,6 +29,9 @@ resize = 8
 
 
 def read_file(filename):
+    if not path.isfile(filename):
+        print("You need to run probMapsRetreiver.py")
+        exit(-1)
     x = 0
     y = 0
     f = open(filename, "r")
