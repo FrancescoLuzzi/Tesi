@@ -1,6 +1,6 @@
 class ColoredOutput:
 
-    __err: str = "\x1b[2;31;40m"
+    __err: str = "\x1b[4;31;40m"
     __info: str = "\x1b[2;33;40m"
     __ok: str = "\x1b[2;32;40m"
     __end: str = "\x1b[0m"
