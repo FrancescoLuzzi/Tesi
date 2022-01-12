@@ -274,7 +274,7 @@ class MultipleDetectionsModel(Model):
             paf_b = cv.resize(paf_b, (frame_width, frame_height))
 
             # to show the heatmaps run: show_heatmap(paf_a,frame), show_heatmap(paf_b,frame)
-            # YOU NEED TO PASS THE FRAME AS AN ARGUMENT IN find_detections
+            # YOU NEED TO PASS THE FRAME AS AN ARGUMENT FROM find_detections
 
             # Find the keypoints for the first and second limb
             # all keypoints for the POSE_PAIR[k][0] keypoint (0=Head,...)
