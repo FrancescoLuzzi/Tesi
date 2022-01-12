@@ -1,5 +1,5 @@
 import argparse
-from components import Exceptions, models, painters, writers
+from components import models, painters, writers, colored_output
 from components.runners import run_simulation_to_file, run_simulation_to_monitor
 from components.file_check import check_file_type
 import os
@@ -15,6 +15,7 @@ def dir_run(
     painter: painters.Painter,
     dir_in: str,
     dir_out: str,
+    outputter: colored_output.ColoredOutput,
 ) -> None:
     if not os.path.isdir(dir_out):
         os.mkdir(dir_out)
@@ -27,16 +28,19 @@ def dir_run(
         fout = os.path.join(dir_out, f"OUT{filename}")
         # checking if f is a file
         if os.path.isfile(f):
-            try:
-                file_type = check_file_type(f)
-                print(f"Currently working on {f}")
-                writer = img_writer if file_type == "image" else video_writer
-                writer.change_file(f, fout)
-                writer.init_writer()
-                run_simulation_to_file(model, writer, painter)
-                writer.close()
-            except Exceptions.FileTypeException:
-                print(f"{f} doesen't have the correct video or image format")
+            file_type = check_file_type(f)
+            if not file_type:
+                outputter.print_error(
+                    f"{f} doesen't have the correct video or image format"
+                )
+                continue
+            outputter.print_info(f"Currently working on {f}")
+            writer = img_writer if file_type == "image" else video_writer
+            writer.change_file(f, fout)
+            writer.init_writer()
+            run_simulation_to_file(model, writer, painter)
+            writer.close()
+            outputter.print_ok(f"Detection on {f} successfully completed!")
 
 
 def file_run(
@@ -44,24 +48,29 @@ def file_run(
     painter: painters.Painter,
     file_input: str,
     file_output: str,
+    outputter: colored_output.ColoredOutput,
 ) -> None:
-    input_type = ""
-    output_type = ""
-    try:
-        input_type = check_file_type(file_input)
-    except Exceptions.FileTypeException:
-        print("errore estensione file input")
-        exit()
-    try:
-        output_type = check_file_type(file_output)
-    except Exceptions.FileTypeException:
+    """Given a model, a painter and a file_input path and a file_output"""
+    if not os.path.isfile(file_input):
+        outputter.print_error("The file doesen't exists. Check file_input name!")
+        exit(-1)
+    input_type = check_file_type(file_input)
+    if not input_type:
+        outputter.print_error(
+            "File_input's file extension is not for videos or images!"
+        )
+        exit(-1)
+
+    output_type = check_file_type(file_output)
+    if output_type != input_type:
+        outputter.print_info(
+            f"Output file type is {output_type=} not consistent with the {input_type=}.\nChanged it to the right extension.\n"
+        )
+        output_type = ""
+    if not output_type:
         _, ext = os.path.splitext(file_input)
         file_output, _ = os.path.splitext(file_output)
         file_output = file_output + ext
-        output_type = input_type
-    if input_type != output_type:
-        print("Estensione errata dell'output")
-        exit(-1)
 
     writer = (
         writers.ImageWriter(file_input, file_output)
@@ -72,16 +81,25 @@ def file_run(
     writer.init_writer()
     run_simulation_to_file(model, writer, painter)
     writer.close()
+    outputter.print_ok(f"{file_input} as been elaborated, {file_output=}")
 
 
 def file_run_monitor(
-    model: models.Model, painter: painters.Painter, file_input: str
+    model: models.Model,
+    painter: painters.Painter,
+    file_input: str,
+    outputter: colored_output.ColoredOutput,
 ) -> None:
-    input_type = ""
-    try:
-        input_type = check_file_type(file_input)
-    except Exceptions.FileTypeException:
-        print("errore estensione file input")
+    """Given a model, a painter and a file_input path, depending on this last one extension, get image/video input\n
+    and displays the output to a window as an image/video"""
+    if not os.path.isfile(file_input):
+        outputter.print_error("The file doesen't exists. Check file_input name!")
+        exit()
+    input_type = check_file_type(file_input)
+    if not input_type:
+        outputter.print_error(
+            "File_input's file extension is not for videos or images!"
+        )
         exit()
     writer = writers.FileMonitorWriter(file_input)
     writer.init_writer()
@@ -91,6 +109,7 @@ def file_run_monitor(
 
 
 def webcam_run_monitor(model: models.Model, painter: painters.Painter) -> None:
+    """Given a model and a painter get video input from webcam and displays the output to a window"""
     writer = writers.WebCamMonitorWriter()
     writer.init_writer()
     run_simulation_to_monitor(model, writer, painter, writer.wait_key_video)
@@ -126,16 +145,17 @@ def main():
     # get Requested Painter
     painter = painters.painter_factory(args.p)
 
+    outputter = colored_output.ColoredOutput()
     # get requested writer depending on the arguments
     if args.dir and os.path.isdir(args.dir):
         if not args.videoOut:
             print("Argument -o, --videoOut is MISSING")
             exit(-1)
-        dir_run(model, painter, args.dir, args.videoOut)
+        dir_run(model, painter, args.dir, args.videoOut, outputter)
     elif args.videoIn and args.videoOut:
-        file_run(model, painter, args.videoIn, args.videoOut)
+        file_run(model, painter, args.videoIn, args.videoOut, outputter)
     elif args.videoIn:
-        file_run_monitor(model, painter, args.videoIn)
+        file_run_monitor(model, painter, args.videoIn, outputter)
     elif not args.videoIn and args.videoOut:
         parser.print_help()
         exit(-1)
