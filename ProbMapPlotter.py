@@ -25,6 +25,8 @@ keypoints_mapping = [
     "L-Ank",
     "Chest",
 ]
+
+# it is used to space the graph over the y axis and to pick less values over the x axis
 resize = 8
 
 

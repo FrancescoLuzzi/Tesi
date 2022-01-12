@@ -57,4 +57,4 @@ probMapsRetreiver.py is used to parse the debug output of the probability map yo
 extrapolate_prob_map(prob_map)
 ```
 
-ProbMapPlotter.py also uses Matplotlib to display the different prob maps (this script needs matplotlib)
+ProbMapPlotter.py can be used after running probMapsRetreiver and uses Matplotlib to display the different prob maps
