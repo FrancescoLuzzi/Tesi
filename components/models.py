@@ -10,6 +10,8 @@ __all__ = ["Model", "SingleDetectionModel", "MultipleDetectionsModel", "model_fa
 
 
 def get_framerate(func):
+    """Decorator to evaluate the time spend in a function"""
+
     def wrapper(*args, **kwargs) -> None:
         start_time = time()
         frame = func(*args, **kwargs)
@@ -22,10 +24,8 @@ def get_framerate(func):
     return wrapper
 
 
-""" This code snippet shows the heatmaps of the paf"""
-
-
 def show_heatmap(paf, frame) -> None:
+    """Shows the heatmaps of the paf on to the original frame displaying it"""
     heatmapshow = None
     heatmapshow = cv.normalize(
         paf, heatmapshow, alpha=0, beta=255, norm_type=cv.NORM_MINMAX, dtype=cv.CV_8U
@@ -35,10 +35,8 @@ def show_heatmap(paf, frame) -> None:
     cv.waitKey(0)
 
 
-"""this code snippet estrapolates the prob_maps to a file"""
-
-
 def extrapolate_prob_map(prob_map) -> None:
+    """Estrapolates the prob_maps to a file called probMaps.txt"""
     with open("probMaps.txt", "a") as f:
         f.write("#########")
         np.savetxt(f, prob_map, fmt="%.2f")
@@ -64,23 +62,34 @@ class Model(ABC):
 
     @abstractmethod
     def find_detections(self, frame, frame_width: int, frame_height: int) -> Any:
+        """Finds the keypoints relative to one or multiple people in a frame, it returns a List[Dict]\n
+        composed by [{ keypoint_id: (x,y) , keypoint_id: (x,y)}, ...]"""
         pass
 
     def init_net(self) -> None:
+        """Initialize the net using proto_path and model_path"""
         self.net = cv.dnn.readNetFromCaffe(self.proto_path, self.model_path)
 
     def enable_gpu(self) -> None:
-        print("gpu Accelerated")
-        self.net.setPreferableBackend(cv.dnn.DNN_BACKEND_CUDA)
-        self.net.setPreferableTarget(cv.dnn.DNN_TARGET_CUDA)
-
-
-"""Model for single detection"""
+        """If opencv is built with CUDA support, enable GPU acceleration"""
+        try:
+            self.net.setPreferableBackend(cv.dnn.DNN_BACKEND_CUDA)
+            self.net.setPreferableTarget(cv.dnn.DNN_TARGET_CUDA)
+            print("gpu Accelerated")
+        except AttributeError:
+            print(
+                "Your opencv library was not built with cuda support, please refer to README.md for clarifications."
+            )
+            print("Couldn't enable GPU accelertion, using CPU.\n")
 
 
 class SingleDetectionModel(Model):
+    """Model for single person detection"""
+
     @get_framerate
     def find_detections(self, frame, frame_width: int, frame_height: int) -> List[Dict]:
+        """Finds the keypoints o a single person in a frame, it returns a List[Dict]\n
+        composed by [{ keypoint_id: (x,y) , keypoint_id: (x,y)}, ...]"""
         self.in_height = 368
         self.in_width = int((self.in_height / frame_height) * frame_width)
 
@@ -122,10 +131,8 @@ class SingleDetectionModel(Model):
         return output
 
 
-"""Model for multiple detections"""
-
-
 class MultipleDetectionsModel(Model):
+    """Model for multiple people detections"""
 
     pose_pairs: List[List[int]]
     paf_idx: List[List[int]]
@@ -154,6 +161,7 @@ class MultipleDetectionsModel(Model):
     """
 
     def get_keypoints(self, prob_map) -> List[Tuple[List[int], float]]:
+        """Retrieve all keypoints with probability > self.threshold"""
         map_smooth = cv.GaussianBlur(prob_map, (3, 3), sigmaX=0, sigmaY=0)
         map_mask = np.uint8(map_smooth > self.threshold)
         keypoints = []
@@ -172,13 +180,12 @@ class MultipleDetectionsModel(Model):
             keypoints.append(max_loc + (prob_map[max_loc[1], max_loc[0]],))
         return keypoints
 
-    """Check every keypoint in cand_a with every keypoint in cand_b
-    Calculate the unitary direction vector between the two keypoint
-    Find the PAF values at a set of interpolated points between the keypoint
-    Dot product between the direction vector and the PAF values to find the value of certainty of that connection.
-    Returns the valid connection if true otherwhise np.zeros((0, 3))"""
-
     def get_valid_pair(self, n_a, n_b, cand_a, cand_b, paf_a, paf_b) -> NDArray:
+        """Check every keypoint in cand_a with every keypoint in cand_b\n
+        Calculate the unitary direction vector between the two keypoint\n
+        Find the PAF values at a set of interpolated points between the keypoint\n
+        Dot product between the direction vector and the PAF values to find the value of certainty of that connection.\n
+        Returns the valid connection if true otherwhise np.zeros((0, 3))"""
         valid_pair = np.zeros((0, 3))
         # iterate all keypoints for both joints cand_a and cand_b
         for i in range(n_a):
@@ -246,14 +253,13 @@ class MultipleDetectionsModel(Model):
                 )
         return valid_pair
 
-    """
-    Check every pair of keypoints from 2 candidates, calculate the distance between them and their PAF value,
-    the pair that has the highest PAF value is from the same person
-    """
-
     def get_valid_pairs(
         self, model_detections, frame_width: int, frame_height: int
     ) -> Tuple[List[NDArray], List[int]]:
+        """
+        Check every pair of keypoints from 2 candidates, calculate the distance between them and their PAF value,
+        the pair that has the highest PAF value is from the same person
+        """
         valid_pairs = []
         invalid_pairs = []
         # loop for every POSE_PAIR
@@ -284,23 +290,21 @@ class MultipleDetectionsModel(Model):
                 valid_pairs.append([])
         return valid_pairs, invalid_pairs
 
-    """
-    Find if part is in personwise_keypoints for its part_indx.
-    Returns (indx,True) if found (-1,False) otherwhise
-    """
-
     def find_part(self, part_indx, personwise_keypoints, part) -> Tuple[int, bool]:
+        """
+        Find if part is in personwise_keypoints for its part_indx.\n
+        Returns (indx,True) if found (-1,False) otherwhise
+        """
         for j in range(len(personwise_keypoints)):
             if personwise_keypoints[j][part_indx] == part:
                 return (j, True)
         return (-1, False)
 
-    """
-    This function creates a list of keypoints belonging to each person
-    for each detected valid pair, it assigns the joint(s) to a person
-    """
-
     def get_personwise_keypoints(self, valid_pairs, invalid_pairs) -> NDArray:
+        """
+        This function creates a list of keypoints belonging to each person
+        for each detected valid pair, it assigns the joint(s) to a person
+        """
         # the last number in each row is the overall score
         # 0 rows, self.n_points+1 cols
         personwise_keypoints = -1 * np.ones((0, (self.n_points + 1)))
@@ -342,6 +346,8 @@ class MultipleDetectionsModel(Model):
 
     @get_framerate
     def find_detections(self, frame, frame_width: int, frame_height: int) -> List[Dict]:
+        """Finds the keypoints of multiple people in a frame, it returns a List[Dict]\n
+        composed by [{ keypoint_id: (x,y) , keypoint_id: (x,y)}, ...]"""
         self.in_height = 368
         self.in_width = int((self.in_height / frame_height) * frame_width)
         # blob and forwrd to the network
@@ -404,6 +410,7 @@ class MultipleDetectionsModel(Model):
 def model_factory(
     multiple: bool, gpu_enable: bool, model_path: str, proto_path: str
 ) -> Model:
+    """Given the requested parameters it return the right model for the job."""
     model = None
     if multiple:
         model = MultipleDetectionsModel(model_path, proto_path)

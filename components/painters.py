@@ -14,6 +14,7 @@ class Painter(ABC):
 
     @abstractmethod
     def paint_frame(self, frame, detections: List[Dict]) -> None:
+        """Paints the limbs found in the frame it can also cover detected faces."""
         pass
 
 
@@ -24,6 +25,7 @@ class SimplePainter(Painter):
         self.pose_pairs = pose_pairs
 
     def paint_frame(self, frame, detections: List[Dict]) -> None:
+        """Paints the limbs found in the frame."""
         for person in detections:
             keys = list(person.keys())
             cv.circle(frame, person[keys[0]], 4, self.colors[keys[0]], -1, cv.FILLED)
@@ -41,6 +43,7 @@ class SimplePainter(Painter):
 
 class PrivatePainter(SimplePainter):
     def paint_frame(self, frame, detections: List[Dict]) -> None:
+        """Paints the limbs found in the frame and covers detected faces"""
         super().paint_frame(frame, detections)
         for person in detections:
             keys = list(person.keys())
@@ -66,6 +69,7 @@ class PrivatePainter(SimplePainter):
 
 
 def painter_factory(private: bool):
+    """Given the private parameter it returns a PrivatePainter or SimplePainter"""
     painter = None
     if private:
         painter = PrivatePainter()

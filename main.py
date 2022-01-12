@@ -45,7 +45,6 @@ def file_run(
     file_input: str,
     file_output: str,
 ) -> None:
-    writer = None
     input_type = ""
     output_type = ""
     try:
@@ -63,10 +62,13 @@ def file_run(
     if input_type != output_type:
         print("Estensione errata dell'output")
         exit(-1)
-    if input_type == "image":
-        writer = writers.ImageWriter(file_input, file_output)
-    else:
-        writer = writers.VideoWriter(file_input, file_output)
+
+    writer = (
+        writers.ImageWriter(file_input, file_output)
+        if input_type == "image"
+        else writers.VideoWriter(file_input, file_output)
+    )
+
     writer.init_writer()
     run_simulation_to_file(model, writer, painter)
     writer.close()
@@ -76,7 +78,6 @@ def file_run_monitor(
     model: models.Model, painter: painters.Painter, file_input: str
 ) -> None:
     input_type = ""
-    writer = None
     try:
         input_type = check_file_type(file_input)
     except Exceptions.FileTypeException:
@@ -84,10 +85,8 @@ def file_run_monitor(
         exit()
     writer = writers.FileMonitorWriter(file_input)
     writer.init_writer()
-    if input_type == "image":
-        run_simulation_to_monitor(model, writer, painter, writer.wait_key_image)
-    else:
-        run_simulation_to_monitor(model, writer, painter, writer.wait_key_video)
+    waiter = writer.wait_key_image if input_type == "image" else writer.wait_key_video
+    run_simulation_to_monitor(model, writer, painter, waiter)
     writer.close()
 
 
@@ -109,17 +108,13 @@ def main():
     )
     parser.add_argument("--dir", "-d", type=str, help="directory source")
     parser.add_argument(
-        "-m", type=bool, default=False, action="store_true", help="persone multiple"
+        "-m", default=False, action="store_true", help="persone multiple"
     )
     parser.add_argument(
-        "-g",
-        type=bool,
-        default=False,
-        action="store_true",
-        help="usa accelerazione gpu",
+        "-g", default=False, action="store_true", help="usa accelerazione gpu"
     )
     parser.add_argument(
-        "-p", type=bool, default=False, action="store_true", help="oscuramento volti"
+        "-p", default=False, action="store_true", help="oscuramento volti"
     )
 
     args = parser.parse_args()
