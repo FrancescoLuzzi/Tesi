@@ -1,10 +1,9 @@
-from components.Exceptions import FileTypeException
 import os
 
 
 def check_file_type(file_name: str) -> str:
     """Check if file_name's extension is compatible with images of videos.\n
-    If both are false FileTypeException is raised"""
+    If both are false return \"\" """
     img_fm = (
         ".tif",
         ".tiff",
@@ -29,4 +28,4 @@ def check_file_type(file_name: str) -> str:
     elif ext in vid_fm:
         return "video"
     else:
-        raise FileTypeException
+        return ""
