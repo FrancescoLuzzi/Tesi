@@ -10,14 +10,24 @@ modello = [
 
 def main():
     parser = argparse.ArgumentParser(description="Process images")
-    parser.add_argument("--videoIn", "-i", type=str, help="input file")
+    parser.add_argument(
+        "--videoIn",
+        "-i",
+        type=str,
+        help="relative or absolute path to an image to ingest, if omitted default to the camera",
+    )
     parser.add_argument(
         "--videoOut",
         "-o",
         type=str,
-        help="optional output file path, in case you have given a directory with -d it will be the output directory",
+        help="path to the output image, if omitted an image will pop up.\nIn case you have given a directory with -d it will be the (requested) output directory",
     )
-    parser.add_argument("--dir", "-d", type=str, help="directory source")
+    parser.add_argument(
+        "--dir",
+        "-d",
+        type=str,
+        help="select a directory to process (overrides -i), -o behaviour changes to the output directory's name (requested)",
+    )
     parser.add_argument(
         "-m",
         default=False,
