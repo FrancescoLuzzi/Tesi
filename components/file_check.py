@@ -1,4 +1,4 @@
-from components.Exceptions import FileException
+from components.Exceptions import FileTypeException
 import os
 
 
@@ -27,4 +27,4 @@ def check_file_type(file_name: str) -> str:
     elif ext in vid_fm:
         return "video"
     else:
-        raise FileException
+        raise FileTypeException

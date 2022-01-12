@@ -2,5 +2,5 @@ class CapNotOpenedException(Exception):
     pass
 
 
-class FileException(Exception):
+class FileTypeException(Exception):
     pass

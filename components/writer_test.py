@@ -1,7 +1,7 @@
 from os import write
 from models import MultipleDetectionsModel, SingleDetectionModel
-from painter import SimplePainter, PrivatePainter
-from writer import FileMonitorWriter, WebCamMonitorWriter, VideoWriter, FileWriter
+from painters import SimplePainter, PrivatePainter
+from writers import FileMonitorWriter, WebCamMonitorWriter, VideoWriter, FileWriter
 from Exceptions import CapNotOpenedException
 
 if __name__ == "__main__":

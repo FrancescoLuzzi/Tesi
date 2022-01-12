@@ -1,6 +1,7 @@
+from types import FunctionType
 from components.models import Model
-from components.writer import FileWriter, MonitorWriter
-from components.painter import Painter
+from components.writers import FileWriter, MonitorWriter
+from components.painters import Painter
 
 
 def run_simulation_to_file(model: Model, writer: FileWriter, painter: Painter) -> None:
@@ -16,7 +17,7 @@ def run_simulation_to_file(model: Model, writer: FileWriter, painter: Painter) -
 
 
 def run_simulation_to_monitor(
-    model: Model, writer: MonitorWriter, painter: Painter, wait
+    model: Model, writer: MonitorWriter, painter: Painter, wait: FunctionType
 ) -> None:
     frame_width, frame_height = writer.get_frame_props()
     while writer.is_open():

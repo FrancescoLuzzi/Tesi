@@ -13,7 +13,10 @@ def get_framerate(func):
     def wrapper(*args, **kwargs) -> None:
         start_time = time()
         frame = func(*args, **kwargs)
-        print("{:.2f} fps".format(1 / float(time() - start_time)))
+        time_elapsed = float(time() - start_time)
+        print(
+            f"Time elapsed: {time_elapsed:.2f} corrisponding to {1/time_elapsed:.2f} fps"
+        )
         return frame
 
     return wrapper
