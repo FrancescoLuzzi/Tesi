@@ -24,9 +24,13 @@ The **tags** to launch this program are:
 
 ## Support code
 
-models.py
+components/models.py
 
 ```
+...
+
+class MultipleDetectionsModel(Model):
+
 ...
 
 def get_keypoints(self, prob_map) -> List[Tuple[List[int], float]]:
