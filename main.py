@@ -1,6 +1,7 @@
 import argparse
 from components import models, painters, writers, colored_output
 from components.runners import dir_run, file_run, file_run_monitor, webcam_run_monitor
+from colorama import init
 
 modello = [
     ".\\mpi\\pose_iter_160000.caffemodel",
@@ -72,4 +73,5 @@ def main():
 
 
 if __name__ == "__main__":
+    init()
     main()
