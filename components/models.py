@@ -75,12 +75,11 @@ class Model(ABC):
         try:
             self.net.setPreferableBackend(cv.dnn.DNN_BACKEND_CUDA)
             self.net.setPreferableTarget(cv.dnn.DNN_TARGET_CUDA)
-            print("gpu Accelerated")
+            print("\x1b[2;32;40mgpu Accelerated\x1b[0m")
         except AttributeError:
             print(
-                "Your opencv library was not built with cuda support, please refer to README.md for clarifications."
+                "\x1b[2;33;40mYour opencv installation was not built with cuda support, please refer to README.md for clarifications.\nCouldn't enable GPU accelertion, using CPU.\n\x1b[0m"
             )
-            print("Couldn't enable GPU accelertion, using CPU.\n")
 
 
 class SingleDetectionModel(Model):
