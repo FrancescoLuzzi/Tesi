@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any
 import cv2 as cv
-import components.Exceptions
+from .Exceptions import CapNotOpenedException
 from typing import Tuple
 from numpy.core.multiarray import array
 
@@ -30,7 +30,7 @@ class Writer(ABC):
         self.frame_height = int(self.input_cap.get(cv.CAP_PROP_FRAME_HEIGHT))
         if not self.input_cap.isOpened():
             print("Error opening video stream or file")
-            raise components.Exceptions.CapNotOpenedException
+            raise CapNotOpenedException
 
     def close(self) -> None:
         """Closes input_cap and possible output"""
