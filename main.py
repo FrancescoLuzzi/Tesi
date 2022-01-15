@@ -1,6 +1,5 @@
 import argparse
-from components import models, painters, writers, colored_output
-from components.runners import dir_run, file_run, file_run_monitor, webcam_run_monitor
+import components
 from colorama import init
 
 modello = [
@@ -57,14 +56,13 @@ def main():
     # get Requested Painter
     painter = painters.painter_factory(args.p)
 
-    outputter = colored_output.ColoredOutput()
-    # get requested writer depending on the arguments
+    # run detections depending on the arguments
     if args.dir:
-        dir_run(model, painter, args.dir, args.videoOut, outputter)
+        dir_run(model, painter, args.dir, args.videoOut)
     elif args.videoIn and args.videoOut:
-        file_run(model, painter, args.videoIn, args.videoOut, outputter)
+        file_run(model, painter, args.videoIn, args.videoOut)
     elif args.videoIn:
-        file_run_monitor(model, painter, args.videoIn, outputter)
+        file_run_monitor(model, painter, args.videoIn)
     elif not args.videoIn and args.videoOut:
         parser.print_help()
         exit(-1)

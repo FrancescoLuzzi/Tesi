@@ -4,7 +4,8 @@ import numpy as np
 from numpy.typing import NDArray
 import cv2 as cv
 from time import time
-from components.BaseData import pose_pairs, paf_idx, n_points, threshold
+from .BaseData import pose_pairs, paf_idx, n_points, threshold
+from .colored_output import print_info, print_ok
 
 __all__ = ["Model", "SingleDetectionModel", "MultipleDetectionsModel", "model_factory"]
 
@@ -75,10 +76,11 @@ class Model(ABC):
         try:
             self.net.setPreferableBackend(cv.dnn.DNN_BACKEND_CUDA)
             self.net.setPreferableTarget(cv.dnn.DNN_TARGET_CUDA)
-            print("\x1b[2;32;40mgpu Accelerated\x1b[0m")
+            print_ok("gpu Accelerated")
         except AttributeError:
-            print(
-                "\x1b[2;33;40mYour opencv installation was not built with cuda support, please refer to README.md for clarifications.\nCouldn't enable GPU accelertion, using CPU.\n\x1b[0m"
+            print_info(
+                "Your opencv installation was not built with cuda support, please refer to README.md for clarifications.\n\
+                Couldn't enable GPU accelertion, using CPU.\n"
             )
 
 
