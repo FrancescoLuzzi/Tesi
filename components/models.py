@@ -73,15 +73,15 @@ class Model(ABC):
 
     def enable_gpu(self) -> None:
         """If opencv is built with CUDA support, enable GPU acceleration"""
-        try:
-            self.net.setPreferableBackend(cv.dnn.DNN_BACKEND_CUDA)
-            self.net.setPreferableTarget(cv.dnn.DNN_TARGET_CUDA)
-            print_ok("gpu Accelerated")
-        except AttributeError:
+        if not "cuda" in cv.getBuildInformation():
             print_info(
-                "Your opencv installation was not built with cuda support, please refer to README.md for clarifications.\n\
-                Couldn't enable GPU accelertion, using CPU.\n"
+                "Your opencv installation was not built with cuda support, please refer to README.md for clarifications.\nCouldn't enable GPU accelertion, using CPU.\n"
             )
+            return
+
+        self.net.setPreferableBackend(cv.dnn.DNN_BACKEND_CUDA)
+        self.net.setPreferableTarget(cv.dnn.DNN_TARGET_CUDA)
+        print_ok("gpu Accelerated")
 
 
 class SingleDetectionModel(Model):
@@ -422,7 +422,7 @@ def model_factory(
         model = MultipleDetectionsModel(model_path, proto_path)
     else:
         model = SingleDetectionModel(model_path, proto_path)
-
+    model.init_net()
     if gpu_enable:
         model.enable_gpu()
     return model

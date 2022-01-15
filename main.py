@@ -51,7 +51,6 @@ def main():
 
     # get Requested Model
     model = components.model_factory(args.m, args.g, modello[0], modello[1])
-    model.init_net()
 
     # get Requested Painter
     painter = components.painter_factory(args.p)
