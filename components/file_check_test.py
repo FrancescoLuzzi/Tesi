@@ -1,4 +1,4 @@
-from file_check import check_file_type
+from .file_check import check_file_type
 import unittest
 
 

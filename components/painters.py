@@ -2,7 +2,7 @@ from typing import List, Dict
 import cv2 as cv
 from abc import ABC, abstractmethod
 from numpy import sqrt, absolute, power, min
-from components.BaseData import colors, pose_pairs, n_points
+from .BaseData import colors, pose_pairs, n_points
 
 __all__ = ["Painter", "PrivatePainter", "SimplePainter", "painter_factory"]
 
