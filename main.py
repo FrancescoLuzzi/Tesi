@@ -1,6 +1,6 @@
 import argparse
 import components
-from colorama import init
+
 
 modello = [
     ".\\mpi\\pose_iter_160000.caffemodel",
@@ -70,5 +70,4 @@ def main():
 
 
 if __name__ == "__main__":
-    init()
     main()
