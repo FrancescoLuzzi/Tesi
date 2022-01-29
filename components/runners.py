@@ -6,7 +6,7 @@ __all__ = ["dir_run", "file_run_monitor", "file_run", "webcam_run_monitor"]
 
 
 def run_simulation_to_file(
-    model: models.Model, writer: writers.FileWriter, painter: painters.Painter
+    model: models.Model, writer: writers.FileToFileWriter, painter: painters.Painter
 ) -> None:
     """Given a painter and initialized model and writer this runs the detection and saves the result on the output file"""
     frame_width, frame_height = writer.get_frame_props()
@@ -61,8 +61,8 @@ def dir_run(
     if not path.isdir(dir_out):
         mkdir(dir_out)
     writer = None
-    img_writer = writers.ImageWriter("")
-    video_writer = writers.VideoWriter("")
+    img_writer = writers.FileToImageWriter("")
+    video_writer = writers.FileToVideoWriter("")
     # loop over all files in directory
     for filename in listdir(dir_in):
         f = path.join(dir_in, filename)
@@ -116,9 +116,9 @@ def file_run(
         file_output = file_output + ext
 
     writer = (
-        writers.ImageWriter(file_input, file_output)
+        writers.FileToImageWriter(file_input, file_output)
         if input_type == "image"
-        else writers.VideoWriter(file_input, file_output)
+        else writers.FileToVideoWriter(file_input, file_output)
     )
 
     writer.init_writer()

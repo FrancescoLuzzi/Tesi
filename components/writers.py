@@ -105,7 +105,7 @@ class FileMonitorWriter(MonitorWriter):
         super().init_writer()
 
 
-class FileWriter(Writer):
+class FileToFileWriter(Writer):
     """This class is used if your desired input is a file and you want to write the output to a file"""
 
     file_in: str
@@ -125,7 +125,7 @@ class FileWriter(Writer):
             self.file_out = file_out
 
 
-class ImageWriter(FileWriter):
+class FileToImageWriter(FileToFileWriter):
     """This class is used if your desired input is a file and you want to write the output to a file as an image"""
 
     def init_writer(self) -> None:
@@ -137,7 +137,7 @@ class ImageWriter(FileWriter):
         cv.imwrite(self.file_out, frame)
 
 
-class VideoWriter(FileWriter):
+class FileToVideoWriter(FileToFileWriter):
     """This class is used if your desired input is a file and you want to write the output to a file as a video"""
 
     out: Any
