@@ -19,9 +19,9 @@ __all__ = [
 class Writer(ABC):
     """This class is used to write to a file or to display frames"""
 
-    input_cap: Any
-    frame_width: int
-    frame_height: int
+    input_cap: Any = None
+    frame_width: int = 0
+    frame_height: int = 0
 
     def init_writer(self) -> None:
         """Init the frame_width and frame_height using the initialized input_cap.\n
@@ -35,6 +35,7 @@ class Writer(ABC):
     def close(self) -> None:
         """Closes input_cap and possible output"""
         self.input_cap.release()
+        self.input_cap = None
 
     def read(self) -> Tuple[bool, array]:
         """Reads a frame from the input_cap"""
@@ -57,7 +58,7 @@ class Writer(ABC):
 class MonitorWriter(Writer):
     """This class is used to display frames"""
 
-    window_name: str
+    window_name: str = ""
 
     def __init__(self, window_name: str = "Output Image") -> None:
         self.window_name = window_name
@@ -93,7 +94,7 @@ class WebCamMonitorWriter(MonitorWriter):
 class FileMonitorWriter(MonitorWriter):
     """This class is used if your desired input is a file and you want to display the output in a window"""
 
-    file_in: str
+    file_in: str = ""
 
     def __init__(self, file_in: str, window_name: str = "Output Image") -> None:
         self.file_in = file_in
@@ -108,8 +109,8 @@ class FileMonitorWriter(MonitorWriter):
 class FileToFileWriter(Writer):
     """This class is used if your desired input is a file and you want to write the output to a file"""
 
-    file_in: str
-    file_out: str
+    file_in: str = ""
+    file_out: str = ""
 
     def __init__(self, file_in: str, file_out: str = "") -> None:
         self.file_in = file_in
@@ -140,8 +141,8 @@ class FileToImageWriter(FileToFileWriter):
 class FileToVideoWriter(FileToFileWriter):
     """This class is used if your desired input is a file and you want to write the output to a file as a video"""
 
-    out: Any
-    fps: int
+    out: Any = None
+    fps: int = 0
 
     def init_writer(self) -> None:
         self.input_cap = cv.VideoCapture(self.file_in)
@@ -159,18 +160,25 @@ class FileToVideoWriter(FileToFileWriter):
     def close(self) -> None:
         """Closes the out and the input_cap"""
         self.out.release()
+        self.out = None
         super().close()
 
 
 class CapToFileWriter(Writer):
     """This class is used if your desired input cv2.Cap instance and you want to write the output to a file"""
 
-    file_out: str
+    file_out: str = ""
 
-    def __init__(self, input_cap: Any, file_out: str = "") -> None:
+    def __init__(self, input_cap: Any = None, file_out: str = "") -> None:
         self.input_cap = input_cap
         self.file_out = file_out
         super().__init__()
+
+    def set_input_cap(self, input_cap: Any):
+        self.input_cap = input_cap
+
+    def set_file_out_name(self, file_out: str):
+        self.file_out = file_out
 
 
 class CapToImageWriter(CapToFileWriter):
@@ -184,8 +192,8 @@ class CapToImageWriter(CapToFileWriter):
 class CapToVideoWriter(CapToFileWriter):
     """This class is used if your desired input is a file and you want to write the output to a file as a video"""
 
-    out: Any
-    fps: int
+    out: Any = None
+    fps: int = 0
 
     def init_writer(self) -> None:
         super().init_writer()
@@ -202,4 +210,5 @@ class CapToVideoWriter(CapToFileWriter):
     def close(self) -> None:
         """Closes the out and the input_cap"""
         self.out.release()
+        self.out = None
         super().close()
