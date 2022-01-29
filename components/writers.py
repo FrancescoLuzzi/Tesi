@@ -160,3 +160,46 @@ class FileToVideoWriter(FileToFileWriter):
         """Closes the out and the input_cap"""
         self.out.release()
         super().close()
+
+
+class CapToFileWriter(Writer):
+    """This class is used if your desired input cv2.Cap instance and you want to write the output to a file"""
+
+    file_out: str
+
+    def __init__(self, input_cap: Any, file_out: str = "") -> None:
+        self.input_cap = input_cap
+        self.file_out = file_out
+        super().__init__()
+
+
+class CapToImageWriter(CapToFileWriter):
+    """This class is used if your desired input is a file and you want to write the output to a file as an image"""
+
+    def write(self, frame) -> None:
+        """Writes the frame to a file as an image"""
+        cv.imwrite(self.file_out, frame)
+
+
+class CapToVideoWriter(CapToFileWriter):
+    """This class is used if your desired input is a file and you want to write the output to a file as a video"""
+
+    out: Any
+    fps: int
+
+    def init_writer(self) -> None:
+        super().init_writer()
+        self.fps = self.input_cap.get(cv.CAP_PROP_FPS)
+        four_cc = cv.VideoWriter_fourcc(*"DIVX")
+        self.out = cv.VideoWriter(
+            self.file_out, four_cc, self.fps, (self.frame_width, self.frame_height)
+        )
+
+    def write(self, frame) -> None:
+        """Writes the frame appending it to a file as a video"""
+        self.out.write(frame)
+
+    def close(self) -> None:
+        """Closes the out and the input_cap"""
+        self.out.release()
+        super().close()
