@@ -5,7 +5,7 @@ from numpy.typing import NDArray
 import cv2 as cv
 from time import time
 from .BaseData import pose_pairs, paf_idx, n_points, threshold
-from .colored_output import print_info, print_ok
+import logging
 
 __all__ = ["Model", "SingleDetectionModel", "MultipleDetectionsModel", "model_factory"]
 
@@ -74,14 +74,14 @@ class Model(ABC):
     def enable_gpu(self) -> None:
         """If opencv is built with CUDA support, enable GPU acceleration"""
         if not "cuda" in cv.getBuildInformation():
-            print_info(
+            logging.warning(
                 "Your opencv installation was not built with cuda support, please refer to README.md for clarifications.\nCouldn't enable GPU accelertion, using CPU.\n"
             )
             return
 
         self.net.setPreferableBackend(cv.dnn.DNN_BACKEND_CUDA)
         self.net.setPreferableTarget(cv.dnn.DNN_TARGET_CUDA)
-        print_ok("gpu Accelerated")
+        logging.info("gpu Accelerated")
 
 
 class SingleDetectionModel(Model):

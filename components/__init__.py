@@ -4,5 +4,8 @@ from .runners import dir_run, file_run, file_run_monitor, webcam_run_monitor
 from .writers import CapToVideoWriter, CapToImageWriter
 from colorama import init
 
-init()
-__version__ = "1.0"
+from .logger import init_logger
+
+init_logger()
+
+__version__ = "1.1"

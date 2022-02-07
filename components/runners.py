@@ -1,6 +1,7 @@
 from types import FunctionType
-from . import models, writers, painters, colored_output, file_check
+from . import models, writers, painters, file_check
 from os import path, mkdir, listdir
+import logging
 
 __all__ = ["dir_run", "file_run_monitor", "file_run", "webcam_run_monitor"]
 
@@ -53,10 +54,10 @@ def dir_run(
     depending on this last one extension, gets image/video input and writes the output to a file in dir_out as an image/video.\n
     """
     if not path.isdir(dir_in):
-        colored_output.print_error(f"{dir_in} is not a directory!")
+        logging.error(f"{dir_in} is not a directory!")
         exit(-1)
     if not dir_out:
-        colored_output.print_error("Argument -o/--videoOut is MISSING")
+        logging.error("Argument -o/--videoOut is MISSING")
         exit(-1)
     if not path.isdir(dir_out):
         mkdir(dir_out)
@@ -71,17 +72,15 @@ def dir_run(
         if path.isfile(f):
             file_type = file_check.check_file_type(f)
             if not file_type:
-                colored_output.print_error(
-                    f"{f} doesen't have the correct video or image format"
-                )
+                logging.error(f"{f} doesen't have the correct video or image format")
                 continue
-            colored_output.print_info(f"Currently working on {f}")
+            logging.debug(f"Currently working on {f}")
             writer = img_writer if file_type == "image" else video_writer
             writer.change_file(f, fout)
             writer.init_writer()
             run_simulation_to_file(model, writer, painter)
             writer.close()
-            colored_output.print_ok(f"Detection on {f} successfully completed!")
+            logging.info(f"Detection on {f} successfully completed!")
 
 
 def file_run(
@@ -95,18 +94,16 @@ def file_run(
     and writes the output to a file as an image/video.\n
     """
     if not path.isfile(file_input):
-        colored_output.print_error("The file doesen't exists. Check file_input name!")
+        logging.error("The file doesen't exists. Check file_input name!")
         exit(-1)
     input_type = file_check.check_file_type(file_input)
     if not input_type:
-        colored_output.print_error(
-            "File_input's file extension is not for videos or images!"
-        )
+        logging.error("File_input's file extension is not for videos or images!")
         exit(-1)
 
     output_type = file_check.check_file_type(file_output)
     if output_type != input_type:
-        colored_output.print_info(
+        logging.warning(
             f"Output file type is {output_type=} not consistent with the {input_type=}.\nChanged it to the right extension.\n"
         )
         output_type = ""
@@ -124,7 +121,7 @@ def file_run(
     writer.init_writer()
     run_simulation_to_file(model, writer, painter)
     writer.close()
-    colored_output.print_ok(f"{file_input} as been elaborated, {file_output=}")
+    logging.info(f"{file_input} as been elaborated, {file_output=}")
 
 
 def file_run_monitor(
@@ -137,11 +134,11 @@ def file_run_monitor(
     and displays the output to a window as an image/video.\n
     """
     if not path.isfile(file_input):
-        colored_output.print_error("The file doesen't exists. Check file_input name!")
+        logging.error("The file doesen't exists. Check file_input name!")
         exit()
     input_type = file_check.check_file_type(file_input)
     if not input_type:
-        colored_output.print_error(
+        logging.error(
             "File_input's file extension is not for videos or images!"
         )
         exit()
