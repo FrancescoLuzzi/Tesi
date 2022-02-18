@@ -17,7 +17,7 @@ The **tags** to launch this program are:
 
 ## Prerequisites
 
-![Python version](https://img.shields.io/badge/python-python%203.8-brightgreen)
+![Python version](https://img.shields.io/badge/python-python%203.9-brightgreen)
 
 - opencv-python 4.5.1 compiled with CUDA11 and cudnn 8.5 [Tutorial to install it](https://www.youtube.com/watch?v=YsmhKar8oOc)
 - numpy
