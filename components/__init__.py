@@ -8,4 +8,4 @@ from .logger import init_logger
 
 init_logger(enable_stream=True)
 
-__version__ = "1.1"
+__version__ = "2.0"
