@@ -6,6 +6,6 @@ from colorama import init
 
 from .logger import init_logger
 
-init_logger()
+init_logger(enable_stream=True)
 
 __version__ = "1.1"
