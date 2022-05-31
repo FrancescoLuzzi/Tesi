@@ -1,7 +1,7 @@
 import logging
 from colorama import init
 
-is_initialized = False
+_LOGGER_INITIALIZED = False
 
 # Logging formatter supporting colorized output
 class ColoredStreamHandler(logging.StreamHandler):
@@ -13,44 +13,41 @@ class ColoredStreamHandler(logging.StreamHandler):
     DEBUG_COLOR = "\033[1;34m"  # bright/bold blue
 
     RESET_CODE = "\033[0m"
+    FORMATS = {
+        logging.CRITICAL: CRITICAL_COLOR,
+        logging.ERROR: ERROR_COLOR,
+        logging.WARNING: WARNING_COLOR,
+        logging.INFO: INFO_COLOR,
+        logging.DEBUG: DEBUG_COLOR,
+    }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.FORMATS = {
-            logging.CRITICAL: self.CRITICAL_COLOR,
-            logging.ERROR: self.ERROR_COLOR,
-            logging.WARNING: self.WARNING_COLOR,
-            logging.INFO: self.INFO_COLOR,
-            logging.DEBUG: self.DEBUG_COLOR,
-        }
-
-    def my_format(self, package):
-        return (
-            f"{package['from']}: {package['message']}" if "from" in package else package
-        )
 
     def format(self, record):
-        record.msg = self.my_format(record.msg)
         text = super().format(record)
         color = str(self.FORMATS.get(record.levelno))
         return color + text + self.RESET_CODE
 
 
 # Setup logging
-def init_logger(file_name: str = "", log_level: int = 10, enable_file: bool = False):
+def init_logger(
+    enable_stream: bool = False,
+    file_name: str = "",
+    enable_file: bool = False,
+    log_level: int = logging.INFO,
+):
     """
-    set log_level:
+    log_level:
         CRITICAL_MIN -> 50
         ERROR_MIN -> 40
         WARNING_MIN -> 30
-        INFO_MIN -> 20
+        INFO_MIN -> 20 (default)
         DEBUG_MIN -> 10
-
-    message_format = { "from": "from_who", "message": "payload" } || "message"
     """
-    global is_initialized
-    if not is_initialized:
-        is_initialized = True
+    global _LOGGER_INITIALIZED
+    if not _LOGGER_INITIALIZED:
+        _LOGGER_INITIALIZED = True
         init()
     else:
         return
@@ -60,9 +57,9 @@ def init_logger(file_name: str = "", log_level: int = 10, enable_file: bool = Fa
     else:
         log_level = log_level - log_level % 10
     handlers = []
-    colored_stream = ColoredStreamHandler()
+    colored_stream = ColoredStreamHandler() if enable_stream else logging.NullHandler()
 
-    msg_format = "%(asctime)s [%(levelname)s] %(message)s"
+    msg_format = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 
     colored_stream.setFormatter(logging.Formatter(msg_format))
     handlers.append(colored_stream)
@@ -75,16 +72,16 @@ def init_logger(file_name: str = "", log_level: int = 10, enable_file: bool = Fa
 
 
 if __name__ == "__main__":
-    init_logger()
-    messaggio = {"from": "prova", "message": "messaggio di prova"}
-    logging.debug(messaggio)
-    logging.info(messaggio)
-    logging.warning(messaggio)
+    init_logger(enable_stream=True)
+    messaggio = "hello"
+    log = logging.getLogger("World")
+    log.debug(messaggio)
+    log.info(messaggio)
+    log.warning(messaggio)
     try:
         y = 1 / 0
     except Exception as e:
-        error_message = messaggio
-        error_message["message"] = e.__repr__()
-        logging.exception(error_message)
-    logging.error(messaggio)
-    logging.critical(messaggio)
+        error_message = e.__repr__()
+        log.exception(error_message)
+    log.error(messaggio)
+    log.critical(messaggio)
