@@ -1,8 +1,8 @@
 from os import write
-from .models import MultipleDetectionsModel, SingleDetectionModel
-from .painters import SimplePainter, PrivatePainter
-from .writers import FileMonitorWriter, WebCamMonitorWriter, VideoWriter, FileWriter
-from .Exceptions import CapNotOpenedException
+from components.models.model_multiple import MultipleDetectionsModel, SingleDetectionModel
+from components.painters.painter import SimplePainter, PrivatePainter
+from .to_monitor_writers import FileMonitorWriter
+from components.utils import CapNotOpenedException
 
 if __name__ == "__main__":
     modello = [

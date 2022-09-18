@@ -1,6 +1,6 @@
 from models import MultipleDetectionsModel, SingleDetectionModel
 import cv2 as cv
-from painters import PrivatePainter, SimplePainter
+from painters import PrivatePainter
 
 if __name__ == "__main__":
     cap = cv.VideoCapture("./TEST_IMAGES/group.jpg")

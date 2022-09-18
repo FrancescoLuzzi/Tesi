@@ -1,136 +1,9 @@
-from abc import ABC, abstractmethod
-from typing import Any, List, Dict, Tuple
+from typing import List, Dict, Tuple
 import numpy as np
 from numpy.typing import NDArray
 import cv2 as cv
-from time import time
-from .BaseData import pose_pairs, paf_idx, n_points, threshold
-import logging
-
-__all__ = ["Model", "SingleDetectionModel", "MultipleDetectionsModel", "model_factory"]
-
-
-def get_framerate(func):
-    """Decorator to evaluate the time spend in a function"""
-
-    def wrapper(*args, **kwargs) -> None:
-        start_time = time()
-        frame = func(*args, **kwargs)
-        time_elapsed = float(time() - start_time)
-        print(
-            f"Time elapsed: {time_elapsed:.2f} corrisponding to {1/time_elapsed:.2f} fps"
-        )
-        return frame
-
-    return wrapper
-
-
-def show_heatmap(paf, frame) -> None:
-    """Shows the heatmaps of the paf on to the original frame displaying it"""
-    heatmapshow = None
-    heatmapshow = cv.normalize(
-        paf, heatmapshow, alpha=0, beta=255, norm_type=cv.NORM_MINMAX, dtype=cv.CV_8U
-    )
-    heatmapshow = cv.applyColorMap(heatmapshow, cv.COLORMAP_HOT)
-    cv.imshow("Heatmap", cv.addWeighted(heatmapshow, 0.3, frame, 0.7, 0))
-    cv.waitKey(0)
-
-
-def extrapolate_prob_map(prob_map) -> None:
-    """Estrapolates the prob_maps to a file called probMaps.txt"""
-    with open("probMaps.txt", "a") as f:
-        f.write("#########")
-        np.savetxt(f, prob_map, fmt="%.2f")
-
-
-class Model(ABC):
-
-    model_path: str
-    proto_path: str
-    n_points: int
-    threshold: float
-    n_points: int
-    pose_pairs: List[List[int]]
-    net: Any
-
-    def __init__(self, model_path: str, proto_path: str) -> None:
-        self.model_path = model_path
-        self.proto_path = proto_path
-
-        self.threshold = threshold
-        self.n_points = n_points
-        self.pose_pairs = pose_pairs
-
-    @abstractmethod
-    def find_detections(self, frame, frame_width: int, frame_height: int) -> Any:
-        """Finds the keypoints relative to one or multiple people in a frame, it returns a List[Dict]\n
-        composed by [{ keypoint_id: (x,y) , keypoint_id: (x,y)}, ...]"""
-        pass
-
-    def init_net(self) -> None:
-        """Initialize the net using proto_path and model_path"""
-        self.net = cv.dnn.readNetFromCaffe(self.proto_path, self.model_path)
-
-    def enable_gpu(self) -> None:
-        """If opencv is built with CUDA support, enable GPU acceleration"""
-        if not "cuda" in cv.getBuildInformation():
-            logging.warning(
-                "Your opencv installation was not built with cuda support, please refer to README.md for clarifications.\nCouldn't enable GPU accelertion, using CPU.\n"
-            )
-            return
-
-        self.net.setPreferableBackend(cv.dnn.DNN_BACKEND_CUDA)
-        self.net.setPreferableTarget(cv.dnn.DNN_TARGET_CUDA)
-        logging.info("gpu Accelerated")
-
-
-class SingleDetectionModel(Model):
-    """Model for single person detection"""
-
-    @get_framerate
-    def find_detections(self, frame, frame_width: int, frame_height: int) -> List[Dict]:
-        """Finds the keypoints o a single person in a frame, it returns a List[Dict]\n
-        composed by [{ keypoint_id: (x,y) , keypoint_id: (x,y)}, ...]"""
-        self.in_height = 368
-        self.in_width = int((self.in_height / frame_height) * frame_width)
-
-        in_blob = cv.dnn.blobFromImage(
-            frame,
-            1.0 / 255,
-            (self.in_width, self.in_height),
-            (0, 0, 0),
-            swapRB=False,
-            crop=False,
-        )
-        self.net.setInput(in_blob)
-        output = self.net.forward()
-        H = output.shape[2]
-        W = output.shape[3]
-        # Empty list to store the detected keypoints
-        points = {}
-
-        for i in range(self.n_points):
-
-            # confidence map of corresponding body's part.
-            prob_map = output[0, i, :, :]
-
-            # Find global maxima of the prob_map.
-            _, prob, _, point = cv.minMaxLoc(prob_map)
-
-            # Scale the point to fit on the origin_al image
-            x = int((frame_width * point[0]) / W)
-            y = int((frame_height * point[1]) / H)
-
-            if prob > self.threshold:
-                points[i] = (x, y)
-                # print(f"{self.keypoints_mapping[i]} detected point: [{x},{y}]")
-        output = []
-        for start, end in self.pose_pairs:
-            if points.get(start) and points.get(end):
-                output.append({start: points[start], end: points[end]})
-
-        return output
-
+from components.common_data import paf_idx
+from .model import Model, get_framerate
 
 class MultipleDetectionsModel(Model):
     """Model for multiple people detections"""
@@ -167,7 +40,7 @@ class MultipleDetectionsModel(Model):
         map_mask = np.uint8(map_smooth > self.threshold)
         keypoints = []
 
-        # to retrive the prob_maps for probMapsRetreiver.py extrapolate_prob_map(prob_map)
+        # to retrive the prob_maps for probMapsRetreiver.py .model.extrapolate_prob_map(prob_map)
 
         # find the contours where the keypoints migth be
         contours, _ = cv.findContours(map_mask, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
@@ -274,7 +147,7 @@ class MultipleDetectionsModel(Model):
             paf_a = cv.resize(paf_a, (frame_width, frame_height))
             paf_b = cv.resize(paf_b, (frame_width, frame_height))
 
-            # to show the heatmaps run: show_heatmap(paf_a,frame), show_heatmap(paf_b,frame)
+            # to show the heatmaps run: .model.show_heatmap(paf_a,frame), .model.show_heatmap(paf_b,frame)
             # YOU NEED TO PASS THE FRAME AS AN ARGUMENT FROM find_detections
 
             # Find the keypoints for the first and second limb
@@ -411,18 +284,3 @@ class MultipleDetectionsModel(Model):
                 person[self.pose_pairs[i][1]] = (B[1], A[1])
                 output.append(person)
         return output
-
-
-def model_factory(
-    multiple: bool, gpu_enable: bool, model_path: str, proto_path: str
-) -> Model:
-    """Given the requested parameters it return the right model for the job."""
-    model = None
-    if multiple:
-        model = MultipleDetectionsModel(model_path, proto_path)
-    else:
-        model = SingleDetectionModel(model_path, proto_path)
-    model.init_net()
-    if gpu_enable:
-        model.enable_gpu()
-    return model
