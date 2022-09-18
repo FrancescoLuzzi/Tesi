@@ -12,3 +12,5 @@
 **/MODIFIED_IMAGES/*
 **/*.txt
 !**/Passi da fare.txt
+!**/requirements.txt
+.venv*
