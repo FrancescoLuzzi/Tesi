@@ -4,9 +4,6 @@ import numpy as np
 import cv2
 from os import path
 
-X = []
-Y = []
-Z = []
 basename = "./probMaps"
 keypoints_mapping = [
     "Head",
@@ -31,23 +28,25 @@ resize = 8
 
 
 def read_file(filename):
+    X = []
+    Y = []
+    Z = []
     x = 0
     y = 0
-    f = open(filename, "r")
-    line = f.readline()
-    while line:
-        if line.strip():
-            values = line.split(" ")
-            if y % resize == 0:
-                for indx, el in enumerate(values):
-                    if indx % resize == 0:
-                        Z.append(float(el))
-                        X.append(x)
-                        Y.append(y / resize)
-                        x += 1
-            x = 0
-            y += 1
-        line = f.readline()
+    with open(filename, "r") as f;
+        for line in f:
+            if line.strip():
+                values = line.split(" ")
+                if y % resize == 0:
+                    for indx, el in enumerate(values):
+                        if indx % resize == 0:
+                            Z.append(float(el))
+                            X.append(x)
+                            Y.append(y / resize)
+                            x += 1
+                x = 0
+                y += 1
+    return (X,Y,Z)
 
 
 resp = None
@@ -55,18 +54,24 @@ while resp == None:
     print("q: QUIT")
     for indx, el in enumerate(keypoints_mapping):
         print(f"{indx+1}: {el}")
-    i = input("Cosa vuoi plottare: ")
+    i = input("What do you want to plot: ")
     if i == "q":
         exit()
-    elif int(i) > keypoints_mapping.__len__() + 1:
-        print("valore non giusto")
     else:
-        resp = int(i)
+        try:
+            resp = int(i)
+            if not (0 < resp <= keypoints_mapping.__len__() + 1):
+                raise ValueError("index out of range")
+        except:
+            resp = None
+            print("Inserted value incorrect!")
+
 filename = f"{basename}{keypoints_mapping[resp-1]}"
 if not path.isfile(filename):
     print("You need to run probMapsRetreiver.py")
     exit(-1)
-read_file(f"{filename}.txt")
+
+X, Y, Z = read_file(f"{filename}.txt")
 Z.reverse()
 Z = np.array(Z)
 Z = Z.transpose()
